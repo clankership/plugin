@@ -1,0 +1,15 @@
+{
+  "name": "clanker-ship",
+  "version": "1.0.0",
+  "description": "Write validation tests for your product from your coding agent, using Clanker Ship. Installs the Clanker CLI (about 320 MB, with Chrome) on first use.",
+  "author": {
+    "name": "Clanker Byte, LLC",
+    "email": "support@clankertest.com"
+  },
+  "homepage": "https://clankertest.com",
+  "repository": "https://github.com/clankership/plugin",
+  "license": "MIT",
+  "keywords": ["clanker-ship", "testing", "playwright", "mcp", "validation"],
+  "logo": "./assets/logo.svg",
+  "mcpServers": ["./mcp.json", "./channel.mcp.json"]
+}

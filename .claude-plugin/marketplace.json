@@ -1,0 +1,24 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "clankership",
+  "description": "Official Clanker Ship plugin for Claude Code.",
+  "owner": {
+    "name": "Clanker Byte, LLC",
+    "email": "support@clankertest.com"
+  },
+  "plugins": [
+    {
+      "name": "clanker-ship",
+      "description": "Write validation tests for your product from your coding agent, using Clanker Ship. Installs the Clanker CLI (about 320 MB, with Chrome) on first use.",
+      "author": {
+        "name": "Clanker Byte, LLC",
+        "email": "support@clankertest.com"
+      },
+      "homepage": "https://clankertest.com",
+      "repository": "https://github.com/clankership/plugin",
+      "license": "MIT",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+#!/bin/sh
+# Claude Code puts the plugin's bin/ on PATH. This forwards to the standalone Clanker CLI,
+# waiting for an install the session hook started.
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+SITE="$(cat "$ROOT/site.txt" 2>/dev/null || echo https://clankertest.com)"
+SHARE="$HOME/.local/share/clanker"
+CLI="$HOME/.local/bin/clanker"
+LOCK="$SHARE/update/plugin-install.lock"
+if [ -d "$LOCK" ] && [ ! -s "$SHARE/app/current" ]; then
+  echo "Waiting for the Clanker CLI install to finish…" >&2
+  while [ -d "$LOCK" ] && [ ! -s "$SHARE/app/current" ]; do sleep 1; done
+fi
+if [ -x "$CLI" ]; then exec "$CLI" "$@"; fi
+echo "The Clanker CLI isn't installed. Install it with: curl -fsSL $SITE/install.sh | sh" >&2
+exit 127

@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "sh \"${CURSOR_PLUGIN_ROOT}/scripts/session-start.sh\" cursor"
+      },
+      {
+        "command": "sh \"${CURSOR_PLUGIN_ROOT}/scripts/hook.sh\" session-start cursor"
+      }
+    ],
+    "stop": [
+      {
+        "command": "sh \"${CURSOR_PLUGIN_ROOT}/scripts/hook.sh\" stop cursor"
+      }
+    ]
+  }
+}
