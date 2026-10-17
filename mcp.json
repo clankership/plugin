@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "clanker-ship-prod": {
+    "clanker-ship": {
       "type": "http",
       "url": "https://api.clankertest.com/agent/mcp",
       "oauth_resource": "https://api.clankertest.com/agent/mcp"

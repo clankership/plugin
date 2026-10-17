@@ -37,9 +37,11 @@ Then start a new thread; Codex runs the plugin's `setup` skill.
 
 ## After install
 
-1. Reconnect or restart the Clanker Ship MCP server.
-2. Sign in to Clanker Ship on the authorization page.
-3. Ask your agent to write or generate validation tests.
+1. Restart your agent so it loads the plugin.
+2. Sign in to Clanker Ship. In Claude Code, type `/mcp`, choose
+   `plugin:clanker-ship:clanker-ship` and choose Authenticate. In Codex and
+   Cursor, the agent's first Clanker Ship call opens the sign-in page.
+3. Ask your agent to set up Clanker Ship, then to write or generate validation tests.
 
 The production MCP server is `https://api.clankertest.com/agent/mcp`.
 

@@ -15,9 +15,12 @@ send you reach you and the tickets you create name you.
 
 ## Steps
 
-1. Call `show_work`. Its first call signs you in through the browser; let the
-   person finish that. In Codex and ChatGPT it opens My work; elsewhere it answers
-   with the person's open tickets as text.
+1. Call `show_work`. In Codex, its first call signs you in through the browser;
+   let the person finish that. In Codex and ChatGPT it opens My work; elsewhere it
+   answers with the person's open tickets as text. Claude Code lists no Clanker
+   Ship tools until the person signs in: when `show_work` is missing there, ask
+   them to type `/mcp`, choose `plugin:clanker-ship:clanker-ship`, choose
+   Authenticate and finish the sign-in in their browser, then ask you again.
 2. Call `read_settings`. Tell the person their default team, which new tickets go
    to when they name none, and whether new messages wake an idle Codex thread.
 3. Ask whether to change either. Change them with `update_settings`, for example
