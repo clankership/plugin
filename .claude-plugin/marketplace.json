@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "clankership",
-  "description": "Official Clanker Ship plugin for Claude Code.",
+  "description": "Official Clanker Ship plugin for Claude Code and Codex.",
   "owner": {
     "name": "Clanker Byte, LLC",
     "email": "support@clankertest.com"

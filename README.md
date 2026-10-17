@@ -26,8 +26,14 @@ Install **Clanker Ship** from the Cursor Marketplace once the listing is live.
 
 ### Codex
 
-Install **Clanker Ship** from the Codex plugin directory once the listing is
-live.
+From a terminal, add this repository as a marketplace and install the plugin:
+
+```bash
+codex plugin marketplace add clankership/plugin
+codex plugin add clanker-ship@clankership
+```
+
+Then start a new thread; Codex runs the plugin's `setup` skill.
 
 ## After install
 
@@ -91,5 +97,5 @@ the CLI's own Playwright against that deployment of the linked product, so the
 project doesn't need Playwright installed, and publishes the run to the workspace.
 `clanker retry` runs failed tests again on the same commit and marks tests that
 then pass as flaky. The CLI always talks to clankertest.com. See the
-[test runs guide](https://docs.clankertest.com/guides/test-runs) and the
-[vault and CLI guide](https://docs.clankertest.com/guides/secrets-vault).
+[test runs guide](https://docs.clankertest.com/get-started/concepts/test-runs) and the
+[vault and CLI guide](https://docs.clankertest.com/get-started/concepts/secrets-vault).

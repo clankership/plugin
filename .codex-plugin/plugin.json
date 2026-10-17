@@ -29,7 +29,7 @@
       "Write the plan for this branch's ticket."
     ]
   },
-  "mcpServers": "./.mcp.json",
+  "mcpServers": "./mcp.json",
   "ignore": ["mcp.qa.json", "mcp.local.json", ".pluginignore"],
   "hooks": "./hooks/codex.json",
   "extensions": {
