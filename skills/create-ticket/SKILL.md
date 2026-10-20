@@ -25,8 +25,9 @@ instructions every time. Do not reuse ones from earlier in the conversation.
 4. Write the summary from the template. When the ticket will carry a tag that has
    its own template, start from that one.
 5. Call `create_ticket` with the team, a short title, the summary, and any status,
-   tags, owner or project the person named. Leave the rest out: the instructions'
-   defaults fill them, including you as the owner when the team wants that.
+   tags, owner, clankers or project the person named. Leave the rest out: the
+   instructions' defaults fill them, including your person as the owner and you
+   as a clanker when the team wants that.
 6. Tell the person the new ticket's ID and title, and link it.
 
 Use only tags that `list_tags` returns for the team. Give each ticket one outcome:
