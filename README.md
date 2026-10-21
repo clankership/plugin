@@ -43,7 +43,7 @@ Then start a new thread; Codex runs the plugin's `setup` skill.
    Cursor, the clanker's first Clanker Ship call opens the sign-in page.
 3. Ask your clanker to set up Clanker Ship, then to write or generate validation tests.
 
-The production MCP server is `https://api.clankertest.com/clanker/mcp`.
+The production MCP server is `https://api.clankertest.com/mcp`.
 
 ## What the clanker can do
 

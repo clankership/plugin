@@ -2,8 +2,8 @@
   "mcpServers": {
     "clanker-ship": {
       "type": "http",
-      "url": "https://api.clankertest.com/clanker/mcp",
-      "oauth_resource": "https://api.clankertest.com/clanker/mcp"
+      "url": "https://api.clankertest.com/mcp",
+      "oauth_resource": "https://api.clankertest.com/mcp"
     }
   }
 }
