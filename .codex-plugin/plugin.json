@@ -1,7 +1,7 @@
 {
   "name": "clanker-ship",
-  "version": "1.1.0",
-  "description": "Write validation tests for your product from your coding agent, using Clanker Ship. Installs the Clanker CLI (about 320 MB, with Chrome) on first use.",
+  "version": "1.1.1",
+  "description": "Write validation tests for your product from your clanker, using Clanker Ship. Installs the Clanker CLI (about 320 MB, with Chrome) on first use.",
   "author": {
     "name": "Clanker Byte, LLC",
     "email": "support@clankertest.com"
@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "Clanker Ship",
     "shortDescription": "Plan, track and test your work from Codex.",
-    "longDescription": "Give your coding agent the Clanker Ship method for writing and generating validation tests. Review the proof in your workspace. The first session installs the Clanker CLI (about 320 MB, with Chrome) in the background.",
+    "longDescription": "Give your clanker the Clanker Ship method for writing and generating validation tests. Review the proof in your workspace. The first session installs the Clanker CLI (about 320 MB, with Chrome) in the background.",
     "developerName": "Clanker Byte, LLC",
     "category": "Productivity",
     "capabilities": [

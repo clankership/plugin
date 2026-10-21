@@ -1,7 +1,7 @@
 # Clanker Ship plugin
 
-Give your coding agent the Clanker Ship method for writing and generating
-validation tests. Agents write the tests. You review the proof.
+Give your clanker the Clanker Ship method for writing and generating
+validation tests. Clankers write the tests. You review the proof.
 
 - Product: [clankertest.com](https://clankertest.com)
 - Publisher: Clanker Byte, LLC
@@ -37,19 +37,19 @@ Then start a new thread; Codex runs the plugin's `setup` skill.
 
 ## After install
 
-1. Restart your agent so it loads the plugin.
+1. Restart your clanker so it loads the plugin.
 2. Sign in to Clanker Ship. In Claude Code, type `/mcp`, choose
    `plugin:clanker-ship:clanker-ship` and choose Authenticate. In Codex and
-   Cursor, the agent's first Clanker Ship call opens the sign-in page.
-3. Ask your agent to set up Clanker Ship, then to write or generate validation tests.
+   Cursor, the clanker's first Clanker Ship call opens the sign-in page.
+3. Ask your clanker to set up Clanker Ship, then to write or generate validation tests.
 
-The production MCP server is `https://api.clankertest.com/agent/mcp`.
+The production MCP server is `https://api.clankertest.com/clanker/mcp`.
 
-## What the agent can do
+## What the clanker can do
 
 - Write test cases, generate their specs, and set up a product's Fixture API and CI
   from your team's live test instructions, with the `test-case-writing`,
-  `test-code-generation` and `set-up-testing` skills. Tell the agent how your team
+  `test-code-generation` and `set-up-testing` skills. Tell the clanker how your team
   writes tests and it saves that to the instructions
 - Read and manage the workspace's products, environments and deployments, within
   the scopes you grant (`read`, `write`) and your workspace role
@@ -59,9 +59,9 @@ The production MCP server is `https://api.clankertest.com/agent/mcp`.
   start and on each prompt, and keep a turn going while messages wait. In Claude
   Code, start with `claude --channels plugin:clanker-ship@clankership` so new
   messages wake an idle session; in Codex, the plugin hands them to the thread
-- Show your work, a ticket or the agent's inbox with `show_work`, `show_ticket` and
-  `show_inbox`. Clients that render MCP Apps, such as Codex desktop and Cursor,
-  draw them as screens where you change a status or ask the agent to start;
+- Show your work, your clankers, a ticket or the clanker's inbox with `show_work`,
+  `show_clankers`, `show_ticket` and `show_inbox`. Clients that render MCP Apps, such as Codex desktop and Cursor,
+  draw them as screens where you change a status or ask the clanker to start;
   terminals get the same answer as text with a link
 - In Codex: My work in the sidebar, the ticket a thread's branch names in its
   side panel, `.plan.md` files in a plan viewer that publishes them to their
@@ -79,12 +79,12 @@ MIT. Copyright (c) 2026 Clanker Byte, LLC.
 ## Clanker CLI
 
 Adding this plugin installs the standalone `clanker` CLI, about 320 MB with its
-own Node, Playwright and Chrome. The first agent session without the CLI starts
+own Node, Playwright and Chrome. The first clanker session without the CLI starts
 the install in the background from clankertest.com and says so; `clanker`
 commands wait until it finishes. It installs into `~/.local/bin` and
 `~/.local/share/clanker` (Windows: `%LOCALAPPDATA%\Clanker`) and then updates
 itself in the background at most once an hour. Shell profiles are not modified;
-the hook adds the bin folder to PATH for agent sessions that lack it. To install
+the hook adds the bin folder to PATH for clanker sessions that lack it. To install
 it yourself, run `curl -fsSL https://clankertest.com/install.sh | sh` (Windows:
 `irm https://clankertest.com/install.ps1 | iex`).
 

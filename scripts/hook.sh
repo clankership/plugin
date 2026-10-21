@@ -1,5 +1,5 @@
 #!/bin/sh
-# Clanker Ship plugin hook: reports the session and hands the agent its new Clanker Ship
+# Clanker Ship plugin hook: reports the session and hands the clanker its new Clanker Ship
 # messages through `clanker hook`. Until the CLI is installed, or if it fails, it does nothing,
 # so a hook never stops the session.
 # Usage: hook.sh <session-start|prompt|stop> <claude|codex|cursor>

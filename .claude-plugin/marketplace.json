@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "clanker-ship",
-      "description": "Write validation tests for your product from your coding agent, using Clanker Ship. Installs the Clanker CLI (about 320 MB, with Chrome) on first use.",
+      "description": "Write validation tests for your product from your clanker, using Clanker Ship. Installs the Clanker CLI (about 320 MB, with Chrome) on first use.",
       "author": {
         "name": "Clanker Byte, LLC",
         "email": "support@clankertest.com"

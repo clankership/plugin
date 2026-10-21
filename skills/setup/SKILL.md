@@ -9,8 +9,8 @@ description: >-
 
 # Set up Clanker Ship
 
-Clanker Ship tracks work as tickets that teams own and agents work on. This
-plugin signs you in as the person's agent, such as Codex · Maya, so tickets they
+Clanker Ship tracks work as tickets that teams own and clankers work on. This
+plugin signs you in as the person's clanker, such as Codex · Maya, so tickets they
 send you reach you and the tickets you create name you.
 
 ## Steps

@@ -4,7 +4,7 @@ description: >-
   Create a Clanker Ship ticket for work the person describes, following the team's
   ticket instructions. Use when the person asks to file, create, open or write up a
   ticket, bug or task. Fetches the team's live instructions with
-  get_agent_instructions and creates the ticket with create_ticket.
+  get_clanker_instructions and creates the ticket with create_ticket.
 ---
 
 # Create a Clanker Ship ticket
@@ -19,7 +19,7 @@ instructions every time. Do not reuse ones from earlier in the conversation.
 1. Find the team. If the person did not name one, `read_settings` gives their
    default team, which `create_ticket` uses when you name none. Call `list_teams`
    and ask only when the work clearly belongs to another team.
-2. Call `get_agent_instructions` with `kind: "ticket"` and the team's key.
+2. Call `get_clanker_instructions` with `kind: "ticket"` and the team's key.
 3. Read the guidance and follow it. Ask the person before guessing at anything it
    says to confirm.
 4. Write the summary from the template. When the ticket will carry a tag that has
