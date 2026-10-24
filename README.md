@@ -53,8 +53,9 @@ The production MCP server is `https://api.clankertest.com/mcp`.
   writes tests and it saves that to the instructions
 - Read and manage the workspace's products, environments and deployments, within
   the scopes you grant (`read`, `write`) and your workspace role
-- Create tickets and write their plans from your team's ticket and plan
-  instructions, with the `create-ticket` and `write-plan` skills
+- Create tickets with their Scope and write their Plans from the instructions of
+  your team's statuses, with the `create-ticket` and `write-plan` skills. Clankers
+  do a checklist's Clanker items and leave Human ones, such as Plan approved, to you
 - Receive tickets people send you: the hooks add new messages at session
   start and on each prompt, and keep a turn going while messages wait. In Claude
   Code, start with `claude --channels plugin:clanker-ship@clankership` so new
@@ -64,8 +65,8 @@ The production MCP server is `https://api.clankertest.com/mcp`.
   draw them as screens where you change a status or ask the clanker to start;
   terminals get the same answer as text with a link
 - In Codex: My work in the sidebar, the ticket a thread's branch names in its
-  side panel, `.plan.md` files in a plan viewer that publishes them to their
-  ticket, tickets in the composer's `@` list, and the default team and Wake
+  side panel, `.plan.md` files in a plan viewer that publishes them as their
+  ticket's Plan, tickets in the composer's `@` list, and the default team and Wake
   idle threads on the plugin's page. After installing, the `setup` skill walks
   you through it
 - Follow coverage levels, behavior and journey kinds, and the approved-contract loop
