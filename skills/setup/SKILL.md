@@ -13,6 +13,14 @@ Clanker Ship tracks work as tickets that teams own and clankers work on. This
 plugin signs you in as the person's clanker, such as Codex · Maya, so tickets they
 send you reach you and the tickets you create name you.
 
+Any task that changes code gets a ticket, and the `work-on-ticket` skill moves it
+through Backlog, Planning, Build, Review, Shipping and Done. Each status keeps a
+document by default: the Scope in Backlog, the Plan in Planning, the Build record in
+Build, the Review in Review and the Ship report in Shipping. When a ticket waits on
+the person, because only Human items are left, a question waits for an answer, or
+work came back, it shows **Needs human** on the ticket, in lists, on My work and in
+their notifications.
+
 ## Steps
 
 1. Call `show_work`. In Codex, its first call signs you in through the browser;
@@ -26,8 +34,9 @@ send you reach you and the tickets you create name you.
 3. Ask whether to change either. Change them with `update_settings`, for example
    `{"set": {"defaultTeam": "WEB"}}`. In Codex, the plugin's page shows the same
    settings.
-4. Tell the person what they can ask next: "What's on my plate?", "File a
-   ticket for this bug", "Write the plan for WEB-31", or "Set up testing" to run
-   the `set-up-testing` skill so their tests run against every environment. In Codex, My work is in
-   the sidebar, a thread's side panel shows the ticket its branch names, such as
-   `codex/web-31-promo`, and `.plan.md` files open in the plan viewer.
+4. Tell the person what they can ask next: "What's on my plate?", "What needs
+   me?", "Fix this bug" or "Build WEB-31", which run the `work-on-ticket` skill, or
+   "Set up testing" to run the `set-up-testing` skill so their tests run against
+   every environment. In Codex, My work is in the sidebar, a thread's side panel
+   shows the ticket its branch names, such as `codex/web-31-promo`, and `.plan.md`
+   files open in the plan viewer.

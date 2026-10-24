@@ -1,7 +1,8 @@
 # Clanker Ship plugin
 
-Give your clanker the Clanker Ship method for writing and generating
-validation tests. Clankers write the tests. You review the proof.
+Give your clanker the Clanker Ship workflow: every task gets a ticket that moves
+from Scope to Plan, Build, Review and Shipping, with tests the clanker writes and
+proof you review.
 
 - Product: [clankertest.com](https://clankertest.com)
 - Publisher: Clanker Byte, LLC
@@ -41,7 +42,8 @@ Then start a new thread; Codex runs the plugin's `setup` skill.
 2. Sign in to Clanker Ship. In Claude Code, type `/mcp`, choose
    `plugin:clanker-ship:clanker-ship` and choose Authenticate. In Codex and
    Cursor, the clanker's first Clanker Ship call opens the sign-in page.
-3. Ask your clanker to set up Clanker Ship, then to write or generate validation tests.
+3. Ask your clanker to set up Clanker Ship, then give it a task, such as "Fix this
+   bug" or "Build WEB-31".
 
 The production MCP server is `https://api.clankertest.com/mcp`.
 
@@ -53,9 +55,16 @@ The production MCP server is `https://api.clankertest.com/mcp`.
   writes tests and it saves that to the instructions
 - Read and manage the workspace's products, environments and deployments, within
   the scopes you grant (`read`, `write`) and your workspace role
-- Create tickets with their Scope and write their Plans from the instructions of
-  your team's statuses, with the `create-ticket` and `write-plan` skills. Clankers
-  do a checklist's Clanker items and leave Human ones, such as Plan approved, to you
+- Work any task as a ticket with the `work-on-ticket` skill: find the ticket or
+  create one, link it to the branch, then write each status's document (Scope,
+  Plan, Build record, Review, Ship report) from your team's status instructions and
+  move it on to Done once the change runs in production. Clankers do a checklist's
+  Clanker items and leave Human ones, such as Plan approved, to you, or check one
+  with your words when you approve it in the conversation
+- Ask you a question when a decision is yours: the ticket shows Needs human, with
+  the question and an answer box, until you answer there or in the conversation
+- Name the branch's ticket, its status, the next Clanker item and why it waits on
+  you at each prompt, through the plugin's hook
 - Receive tickets people send you: the hooks add new messages at session
   start and on each prompt, and keep a turn going while messages wait. In Claude
   Code, start with `claude --channels plugin:clanker-ship@clankership` so new
