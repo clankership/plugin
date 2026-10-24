@@ -119,6 +119,36 @@ a stage and add only what the instructions don't cover.
 - Move to Done once the merged change runs in production and the instructions
   allow it. Otherwise say the ticket is ready for a person to close.
 
+## Without the Clanker Ship tools
+
+When this session has no Clanker Ship tools, ask your person to connect them
+(`/mcp` in Claude Code). Meanwhile, use the `clanker` CLI, which does the same
+with their sign-in:
+
+| Tool                       | CLI                                                                         |
+| -------------------------- | --------------------------------------------------------------------------- |
+| `get_ticket`               | `clanker ticket get WEB-31`                                                 |
+| `get_document`             | `clanker ticket doc show WEB-31 scope`                                      |
+| `write_document`           | `clanker ticket doc write WEB-31 plan --file plan.md --base-revision 2`     |
+| `edit_document`            | `clanker ticket doc edit WEB-31 plan --old "…" --new "…" --base-revision 3` |
+| `list_tickets`             | `clanker ticket list --query "docs search"`                                 |
+| `create_ticket`            | `clanker ticket create --team WEB --title "Add docs search"`                |
+| `update_ticket`            | `clanker ticket update WEB-31 --status "In Build"`                          |
+| `get_clanker_instructions` | `clanker status instructions show "In Planning" --team WEB`                 |
+| `add_checklist_item`       | `clanker ticket checklist add WEB-31 "Docs updated" --status "In Build"`    |
+| `update_checklist_item`    | `clanker ticket checklist check WEB-31 "Tests pass"`                        |
+| `ask_human`                | `clanker ticket ask WEB-31 "…" --choice "…"`                                |
+| `answer_question`          | `clanker ticket answer WEB-31 "…"`                                          |
+| `link_ticket_branch`       | `clanker ticket branch link WEB-31`                                         |
+| `link_ticket_pull_request` | `clanker ticket pr link WEB-31 https://github.com/acme/web/pull/142`        |
+| `comment_on_ticket`        | `clanker ticket comment WEB-31 --body "…"`                                  |
+| `complete_message`         | `clanker inbox complete <message> --client claude`                          |
+
+`clanker <command> --help` shows every option. The CLI acts as your person,
+so check a Human item with it only when they approve it in this conversation.
+When a command this skill names is missing, run `clanker update` and try
+again: a new CLI reaches a computer within an hour of its release.
+
 ## When something arrives
 
 - A ticket sent from Clanker Ship: Draft or Refine works the Backlog, Plan
