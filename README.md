@@ -74,7 +74,7 @@ The production MCP server is `https://api.clankertest.com/mcp`.
   `show_clankers`, `show_ticket` and `show_inbox`. Clients that render MCP Apps, such as Codex desktop and Cursor,
   draw them as screens where you change a status or ask the clanker to start;
   terminals get the same answer as text with a link
-- In Codex: My work in the sidebar, the ticket a thread's branch names in its
+- In Codex: My work in the sidebar, the ticket a thread's branch works on in its
   side panel, `.plan.md` files in a plan viewer that publishes them as their
   ticket's Plan, tickets in the composer's `@` list, and the default team and Wake
   idle threads on the plugin's page. After installing, the `setup` skill walks

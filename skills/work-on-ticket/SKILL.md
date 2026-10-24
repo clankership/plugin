@@ -51,7 +51,8 @@ name, an item or an outline.
 ## Find the ticket
 
 1. Use the ID the person names, else the ticket the Clanker Ship hook names
-   for this branch at each prompt.
+   for this branch: at each prompt in Claude Code and Codex, at session start
+   in Cursor.
 2. Else call `list_tickets` with `query` set to the task's key words and the
    open stages. One clear match: use it and say so. Several: ask which.
 3. None: create one with `create_ticket` and a short title, on the team the

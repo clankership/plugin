@@ -38,5 +38,5 @@ their notifications.
    me?", "Fix this bug" or "Build WEB-31", which run the `work-on-ticket` skill, or
    "Set up testing" to run the `set-up-testing` skill so their tests run against
    every environment. In Codex, My work is in the sidebar, a thread's side panel
-   shows the ticket its branch names, such as `codex/web-31-promo`, and `.plan.md`
-   files open in the plan viewer.
+   shows the ticket linked to its branch or named in it, such as
+   `codex/web-31-promo`, and `.plan.md` files open in the plan viewer.
