@@ -57,8 +57,9 @@ The production MCP server is `https://api.clankertest.com/mcp`.
   the scopes you grant (`read`, `write`) and your workspace role
 - Work any task as a ticket with the `work-on-ticket` skill: find the ticket or
   create one, link it to the branch, then write each status's document (Scope,
-  Plan, Build record, Review, Ship report) from your team's status instructions and
-  move it on to Done once the change runs in production. Clankers do a checklist's
+  Plan, Build record, Review, Ship report) from your team's status instructions,
+  link the pull request it opens to the ticket, and move it on to Done once the
+  change runs in production. Clankers do a checklist's
   Clanker items and leave Human ones, such as Plan approved, to you, or check one
   with your words when you approve it in the conversation
 - Ask you a question when a decision is yours: the ticket shows Needs human, with

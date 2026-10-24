@@ -92,6 +92,9 @@ a stage and add only what the instructions don't cover.
 - When a test case must change, change it in the Plan, record the deviation,
   add a Human item "Test case changes approved" to the Build checklist and
   call `ask_human`. Don't build on the changed cases until it is checked.
+- When the checklist is done, open the pull request from the ticket's branch
+  and link it with `link_ticket_pull_request`, passing the link `gh pr create`
+  prints. Work in several repositories links one pull request per repository.
 
 ## Review (by default, the Review)
 
@@ -101,13 +104,15 @@ a stage and add only what the instructions don't cover.
   fix from the Build record. Reuse the Plan's diagrams, and draw new ones in
   Mermaid.
 - Stop for the review. When the Review checklist is done and the
-  instructions allow it, merge the pull request.
+  instructions allow it, merge each pull request the ticket links;
+  `get_ticket` lists them.
 
 ## Shipping (by default, the Ship report)
 
 - Call `list_deployments` for the product and add one Shipping checklist item
   per environment, in order. Check each when `get_deployment` shows a version
-  that includes the merge. Merged alone is not shipped.
+  that includes every linked pull request's merge. Merged alone is not
+  shipped.
 - In production, check the Scope's success signal and the logs. Never use a
   real customer's account or data.
 - Move to Done once the merged change runs in production and the instructions
@@ -126,4 +131,6 @@ a stage and add only what the instructions don't cover.
 ## When the work changes
 
 - A second outcome gets its own ticket. Don't grow this one.
+- When a pull request is closed for a new one, link the new one and unlink
+  the old with `unlink_ticket_pull_request`.
 - When the person drops the work, ask before moving the ticket to Canceled.
