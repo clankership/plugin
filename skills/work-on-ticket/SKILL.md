@@ -11,11 +11,11 @@ description: >-
 
 # Work on a ticket
 
-Every ticket moves through six stages: Backlog, Planning, Build, Review,
-Shipping and Done. Each status in a stage has its own instructions and
+Every ticket moves through six stages: Backlog, Plan, Build, Review,
+Ship and Done. Each status in a stage has its own instructions and
 checklist, and most keep a document. The default statuses, one per stage, keep
 the Scope, Plan, Build record, Review and Ship report; a team may add more,
-such as Design in Planning. Read them live every time. Never assume a status
+such as Design in Plan. Read them live every time. Never assume a status
 name, an item or an outline.
 
 ## In every status
@@ -26,8 +26,9 @@ name, an item or an outline.
 - Write the status's document with `write_document` the first time and
   `edit_document` after that, passing the revision you read. On a conflict,
   read the document again and redo your change on the new revision.
-- Each checklist item is tagged Human or Clanker. Do the Clanker items, and
-  check each one with `update_checklist_item` when it is done, not before.
+- Each checklist item is tagged Human or Clanker. Do the Clanker items: mark
+  each one in progress with `update_checklist_item` and `inProgress: true` when
+  you start it, and check it with `done: true` when it is done, not before.
 - Add items the status still needs with `add_checklist_item`, which takes
   several `items` at once, each tagged for whoever must do it. When you can't
   do a Clanker item, tag it Human and say why with `comment_on_ticket`.
@@ -75,7 +76,7 @@ a stage and add only what the instructions don't cover.
 - Written by a person: read it and comment on the gaps. Don't rewrite it.
 - When the person only wants the ticket filed, stop once the Scope is written.
 
-## Planning (by default, the Plan)
+## Plan (by default, the Plan)
 
 - When the Scope is empty, scope first.
 - Write the test cases with the `test-case-writing` skill.
@@ -108,9 +109,9 @@ a stage and add only what the instructions don't cover.
   instructions allow it, merge each pull request the ticket links;
   `get_ticket` lists them.
 
-## Shipping (by default, the Ship report)
+## Ship (by default, the Ship report)
 
-- Call `list_deployments` for the product and add one Shipping checklist item
+- Call `list_deployments` for the product and add one Ship checklist item
   per environment, in order. Check each when `get_deployment` shows a version
   that includes every linked pull request's merge. Merged alone is not
   shipped.
@@ -133,9 +134,9 @@ with their sign-in:
 | `edit_document`            | `clanker ticket doc edit WEB-31 plan --old "…" --new "…" --base-revision 3` |
 | `list_tickets`             | `clanker ticket list --query "docs search"`                                 |
 | `create_ticket`            | `clanker ticket create --team WEB --title "Add docs search"`                |
-| `update_ticket`            | `clanker ticket update WEB-31 --status "In Build"`                          |
-| `get_clanker_instructions` | `clanker status instructions show "In Planning" --team WEB`                 |
-| `add_checklist_item`       | `clanker ticket checklist add WEB-31 "Docs updated" --status "In Build"`    |
+| `update_ticket`            | `clanker ticket update WEB-31 --status "Build"`                             |
+| `get_clanker_instructions` | `clanker status instructions show "Plan" --team WEB`                        |
+| `add_checklist_item`       | `clanker ticket checklist add WEB-31 "Docs updated" --status "Build"`       |
 | `update_checklist_item`    | `clanker ticket checklist check WEB-31 "Tests pass"`                        |
 | `ask_human`                | `clanker ticket ask WEB-31 "…" --choice "…"`                                |
 | `answer_question`          | `clanker ticket answer WEB-31 "…"`                                          |
@@ -152,7 +153,7 @@ again: a new CLI reaches a computer within an hour of its release.
 ## When something arrives
 
 - A ticket sent from Clanker Ship: Draft or Refine works the Backlog, Plan
-  works Planning, Build works Build. Call `complete_message` when done.
+  works Plan, Build works Build. Call `complete_message` when done.
 - An answer to your question: carry on where you stopped, then call
   `complete_message`.
 - A comment that mentions you: answer it right away with `comment_on_ticket`,
