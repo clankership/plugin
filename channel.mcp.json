@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "clanker-ship-channel": {
-      "command": "${CLAUDE_PLUGIN_ROOT}/bin/clanker",
-      "args": ["channel", "--client", "claude"]
-    }
-  }
-}

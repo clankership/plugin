@@ -1,8 +1,8 @@
 #!/bin/sh
-# Clanker Ship plugin hook: reports the session and hands the clanker its new Clanker Ship
-# messages through `clanker hook`. Until the CLI is installed, or if it fails, it does nothing,
-# so a hook never stops the session.
-# Usage: hook.sh <session-start|prompt|stop> <claude|codex|cursor>
+# Clanker Ship plugin hook: reports the session, names its ticket, binds the ticket of a ticket
+# call and hands the clanker its new Clanker Ship messages through `clanker hook`. Until the CLI
+# is installed, or if it fails, it does nothing, so a hook never stops the session.
+# Usage: hook.sh <session-start|prompt|tool|stop> <claude|codex|cursor>
 EVENT="$1"
 CLIENT="$2"
 case "$(uname -s)" in

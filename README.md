@@ -64,12 +64,15 @@ The production MCP server is `https://api.clankertest.com/mcp`.
   with your words when you approve it in the conversation
 - Ask you a question when a decision is yours: the ticket shows Needs human, with
   the question and an answer box, until you answer there or in the conversation
-- Name the branch's ticket, its status, the next Clanker item and why it waits on
-  you at each prompt, through the plugin's hook
+- Name the session's ticket, its status, the next Clanker item and why it waits on
+  you at each prompt, through the plugin's hook. In Claude Code the session is
+  named after its ticket, a band above the prompt shows its stage, progress and
+  next step and what each turn changed, and `/ticket` and `/work` open a pane
+  with its checklist, where you check your own items, and your other work
 - Receive tickets people send you: the hooks add new messages at session
   start and on each prompt, and keep a turn going while messages wait. In Claude
-  Code, start with `claude --channels plugin:clanker-ship@clankership` so new
-  messages wake an idle session; in Codex, the plugin hands them to the thread
+  Code, the plugin keeps each session connected, so a new message starts a turn
+  even in an idle session; in Codex, the plugin hands them to the thread
 - Show your work, your clankers, a ticket or the clanker's inbox with `show_work`,
   `show_clankers`, `show_ticket` and `show_inbox`. Clients that render MCP Apps, such as Codex desktop and Cursor,
   draw them as screens where you change a status or ask the clanker to start;

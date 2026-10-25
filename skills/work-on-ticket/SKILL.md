@@ -52,7 +52,7 @@ name, an item or an outline.
 ## Find the ticket
 
 1. Use the ID the person names, else the ticket the Clanker Ship hook names
-   for this branch: at each prompt in Claude Code and Codex, at session start
+   for this session: at each prompt in Claude Code and Codex, at session start
    in Cursor.
 2. Else call `list_tickets` with `query` set to the task's key words and the
    open stages. One clear match: use it and say so. Several: ask which.
@@ -67,6 +67,22 @@ Then work the ticket's current status. For each status, first call
 status's document with `get_document` when it has one, and follow the
 instructions' guidance and template. The notes below hold for every status in
 a stage and add only what the instructions don't cover.
+
+## Show the ticket
+
+In Claude Code, the plugin shows the session's ticket to your person: the
+session is named after it, a band above the prompt shows its stage, progress
+and next step, and after each turn the band says what the turn changed. The
+ticket you create or link with `create_ticket`, `link_ticket_branch`,
+`clanker ticket create` or `clanker ticket branch link` becomes the session's.
+
+- Keep Claude Code's to-do list equal to the current status's open Clanker
+  items, in order, so the desktop app's tasks card follows the ticket. Mark an
+  item done when you check it on the ticket.
+- When your person asks you to work on another ticket in this session, switch
+  with `clanker session ticket WEB-35`, then work that ticket.
+- Your person sees the ticket above the prompt, so don't repeat its status to
+  them; say what you did.
 
 ## Backlog (by default, the Scope)
 
@@ -144,6 +160,7 @@ with their sign-in:
 | `link_ticket_pull_request` | `clanker ticket pr link WEB-31 https://github.com/acme/web/pull/142`        |
 | `comment_on_ticket`        | `clanker ticket comment WEB-31 --body "…"`                                  |
 | `complete_message`         | `clanker inbox complete <message> --client claude`                          |
+| `set_session_ticket`       | `clanker session ticket WEB-31`                                             |
 
 `clanker <command> --help` shows every option. The CLI acts as your person,
 so check a Human item with it only when they approve it in this conversation.

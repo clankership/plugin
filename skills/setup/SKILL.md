@@ -37,6 +37,10 @@ their notifications.
 4. Tell the person what they can ask next: "What's on my plate?", "What needs
    me?", "Fix this bug" or "Build WEB-31", which run the `work-on-ticket` skill, or
    "Set up testing" to run the `set-up-testing` skill so their tests run against
-   every environment. In Codex, My work is in the sidebar, a thread's side panel
+   every environment. In Claude Code, each session is named after its ticket,
+   a band above the prompt shows the ticket's stage, progress and next step,
+   and its Ticket and My work buttons, or `/ticket` and `/work`, open a pane
+   with the ticket's checklist, where they check their own items, and their
+   other work. In Codex, My work is in the sidebar, a thread's side panel
    shows the ticket linked to its branch or named in it, such as
    `codex/web-31-promo`, and `.plan.md` files open in the plan viewer.
