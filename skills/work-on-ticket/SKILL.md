@@ -71,9 +71,8 @@ a stage and add only what the instructions don't cover.
 ## Show the ticket
 
 In Claude Code, the plugin shows the session's ticket to your person: the
-session is named after it, a band above the prompt shows its stage, progress
-and next step, and after each turn the band says what the turn changed. The
-ticket you create or link with `create_ticket`, `link_ticket_branch`,
+session is named after it, and a band above the prompt shows its status and its
+checklist's progress. The ticket you create or link with `create_ticket`, `link_ticket_branch`,
 `clanker ticket create` or `clanker ticket branch link` becomes the session's.
 
 - Keep Claude Code's to-do list equal to the current status's open Clanker

@@ -5,6 +5,12 @@
 # Usage: hook.sh <session-start|prompt|tool|stop> <claude|codex|cursor>
 EVENT="$1"
 CLIENT="$2"
+# In a Clanker Ship checkout, `pnpm plugin:dev` writes .dev/clanker: the checkout's own CLI.
+DEV="$(cd "$(dirname "$0")/.." && pwd)/.dev/clanker"
+if [ -x "$DEV" ]; then
+  "$DEV" hook "$EVENT" --client "$CLIENT" 2>/dev/null
+  exit 0
+fi
 case "$(uname -s)" in
   MINGW* | MSYS* | CYGWIN*)
     PREFIX="$(cygpath -u "$LOCALAPPDATA" 2>/dev/null || echo "$LOCALAPPDATA")/Clanker"

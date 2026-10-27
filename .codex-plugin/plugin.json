@@ -1,6 +1,6 @@
 {
   "name": "clanker-ship",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "Write validation tests for your product from your clanker, using Clanker Ship. Installs the Clanker CLI (about 320 MB, with Chrome) on first use.",
   "author": {
     "name": "Clanker Byte, LLC",

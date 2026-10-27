@@ -66,8 +66,8 @@ The production MCP server is `https://api.clankertest.com/mcp`.
   the question and an answer box, until you answer there or in the conversation
 - Name the session's ticket, its status, the next Clanker item and why it waits on
   you at each prompt, through the plugin's hook. In Claude Code the session is
-  named after its ticket, a band above the prompt shows its stage, progress and
-  next step and what each turn changed, and `/ticket` and `/work` open a pane
+  named after its ticket, a band above the prompt shows its status and a bar of
+  its checklist's progress, and `/ticket` and `/work` open a pane
   with its checklist, where you check your own items, and your other work
 - Receive tickets people send you: the hooks add new messages at session
   start and on each prompt, and keep a turn going while messages wait. In Claude

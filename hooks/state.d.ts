@@ -5,6 +5,15 @@ export type Stage = "backlog" | "plan" | "build" | "review" | "ship" | "done" | 
 
 export type Progress = { done: number; inProgress: number; total: number };
 
+/** An item of the checklist for the ticket's current status: done, in progress, or not started. */
+export type ViewItem = {
+  id: string;
+  title: string;
+  doer: "human" | "clanker";
+  done: boolean;
+  inProgress: boolean;
+};
+
 export type ViewTicket = {
   id: string;
   identifier: string;
@@ -14,7 +23,7 @@ export type ViewTicket = {
   status: { name: string; category: Stage };
   checklist: Progress;
   next: string | null;
-  items: { id: string; title: string; doer: "human" | "clanker"; done: boolean }[];
+  items: ViewItem[];
   needsHuman: { reasons: string[]; items: string[] } | null;
   documents: { name: string; slug: string; written: boolean }[];
 };
@@ -36,7 +45,8 @@ export type View = {
   ticket: ViewTicket | null;
   title: string | null;
   line: string;
-  work: { needsYou: number; tickets: WorkTicket[] };
+  /** The person's open tickets, how many of the others need them, and their My clankers page. */
+  work: { needsYou: number; url: string; tickets: WorkTicket[] };
 };
 
 export type PaneTab = "ticket" | "work";
@@ -48,10 +58,12 @@ declare module "claude-code" {
       view: View | null;
       /** Whether `clanker session connect` holds the connection. */
       connected: boolean;
-      /** The last turn's Turn form, until the next prompt. */
-      turn: string | null;
-      /** The no-ticket band's ×, for the rest of the session. */
+      /** The band's ×, until the session's ticket changes or /ticket shows it again. */
       hidden: boolean;
+      /** Whether the no-ticket band shows its ticket picker. */
+      picking: boolean;
+      /** Whether the ticket band shows the ticket's checklist, which its chevron toggles. */
+      expanded: boolean;
       /** The pane's tab. */
       tab: PaneTab;
       /** The pane's last failure, such as a check the CLI refused. */

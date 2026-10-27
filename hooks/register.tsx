@@ -1,22 +1,84 @@
 import { atom, read, update } from "claude-code";
 import type { EngineInterface, Register } from "claude-code";
-import type { PaneTab, Stage, View, ViewTicket, WorkTicket } from "./state";
+import type { PaneTab, Progress, Stage, View, ViewItem, ViewTicket, WorkTicket } from "./state";
 
-// Clanker Ship in Claude Code: a band above the prompt with the session's ticket, a pane with
-// its checklist and the person's other work, the turn's changes on the band, and messages that
-// start a turn. Its data comes from `clanker session connect`, which holds the session's
-// connection to Clanker Ship and prints one JSON line per change.
+// Clanker Ship in Claude Code: a band above the prompt with the session's ticket and its
+// progress, a pane with its checklist and the person's other work, and messages that start a
+// turn. Its data comes from `clanker session connect`, which holds the session's connection to
+// Clanker Ship and prints one JSON line per change.
 
 const PANE = "clanker-ship";
 
 const view = atom({ plugin: "clanker-ship", key: "view" } as const, null);
 const connected = atom({ plugin: "clanker-ship", key: "connected" } as const, false);
-const turn = atom({ plugin: "clanker-ship", key: "turn" } as const, null);
 const hidden = atom({ plugin: "clanker-ship", key: "hidden" } as const, false);
 const tab = atom({ plugin: "clanker-ship", key: "tab" } as const, "ticket");
 const notice = atom({ plugin: "clanker-ship", key: "notice" } as const, null);
+const picking = atom({ plugin: "clanker-ship", key: "picking" } as const, false);
+const expanded = atom({ plugin: "clanker-ship", key: "expanded" } as const, false);
 
-const STAGES = ["backlog", "plan", "build", "review", "ship", "done"] as const;
+/** The picker's status groups, work furthest along first, as My work lists them. */
+const GROUP_ORDER: readonly Stage[] = [
+  "ship",
+  "review",
+  "build",
+  "plan",
+  "backlog",
+  "done",
+  "canceled",
+];
+
+/** The sign that something waits on the person, linked to their My clankers page. */
+const NEEDS_YOU = "🙋‍♂️";
+
+/** The columns between the ticket's title and its status. */
+const STATUS_GAP = 2;
+
+/** The website's colors the band's drawings use, light then dark; work in progress is a lighter green. */
+const WEBSITE_COLORS = {
+  light: {
+    primary: "#2455e8",
+    success: "#10b981",
+    started: "#6ee7b7",
+    muted: "#586984",
+  },
+  dark: {
+    primary: "#9db8ff",
+    success: "oklch(0.72 0.17 160)",
+    started: "oklch(0.86 0.1 160)",
+    muted: "#a5b4ce",
+  },
+};
+type Colors = (typeof WEBSITE_COLORS)["light"];
+
+/** Where a checklist item stands, as the website's checkbox draws it. */
+type ItemState = "done" | "in_progress" | "not_started";
+const ITEM_ALTS: Record<ItemState, string> = {
+  done: "Done",
+  in_progress: "In progress",
+  not_started: "Not started",
+};
+/** The item states on the terminal, which draws no Svg: empty, a square inside, and filled. */
+const ITEM_GLYPHS: Record<ItemState, string> = { done: "■", in_progress: "▣", not_started: "□" };
+/** Their colors there: gray, the bar's lighter green, then green. */
+const ITEM_COLORS: Record<ItemState, string> = {
+  done: "success",
+  in_progress: WEBSITE_COLORS.light.started,
+  not_started: "subtle",
+};
+/** A click moves an item on, as on the website: not started, in progress, done, then over. */
+const NEXT_STATE: Record<ItemState, ItemState> = {
+  not_started: "in_progress",
+  in_progress: "done",
+  done: "not_started",
+};
+/** The CLI's checklist command that puts an item in each state. */
+const STATE_COMMANDS: Record<ItemState, string> = {
+  not_started: "uncheck",
+  in_progress: "start",
+  done: "check",
+};
+
 const STAGE_LABELS: Record<Stage, string> = {
   backlog: "Backlog",
   plan: "Plan",
@@ -74,6 +136,7 @@ export const register: Register = (on) => {
 
   on("command.run", { command: "ticket" }, async ($, e) => {
     if (e.args.trim()) return { text: await pick($, e.args.trim()) };
+    await update($, hidden, () => false);
     await openPane($, "ticket");
     return { text: "Clanker Ship pane opened." };
   });
@@ -83,118 +146,212 @@ export const register: Register = (on) => {
     return { text: "Clanker Ship pane opened on My work." };
   });
 
-  // A new turn starts: the last turn's changes leave the band. A failure never holds the prompt.
-  on("prompt.submit", async ($, e, next) => {
-    await update($, turn, () => null);
-    return next(e);
-  }).catch(($, e, next) => next(e));
-
-  // What the turn changed on the ticket goes on the band until the next prompt.
-  on("turn.complete", async ($, e, next) => {
-    const done = await next(e);
-    if (e.agentId === undefined && (e.reason === "answer" || e.reason === "aborted"))
-      void showChanges($);
-    return done;
-  });
-
   on("ui.render", { component: "AbovePrompt" }, async ($, e, next) => {
     const current = await read($, view);
     if (e.props.hasSurvey || !current) return next(e);
-    if (!current.ticket && (await read($, hidden))) return next(e);
-    const { Box, Button, Text } = $.ui.resolve(e);
-    const changes = await read($, turn);
+    if (await read($, hidden)) return next(e);
+    const { Box, Button, Link, Markdown, Text } = $.ui.resolve(e);
     const ticket = current.ticket;
-    const others = current.work.needsYou;
-    const work = (
-      <Button
-        key="work"
-        hotkey="w"
-        dimColor={!others}
-        label={others ? `My work · ${others} need${others === 1 ? "s" : ""} you` : "My work"}
-        onPress={() => openPane($, "work")}
-      />
-    );
-    if (!ticket)
+    // The picker lists the person's open tickets by status, work furthest along first, each
+    // picked by a click. A long list scrolls in the band.
+    if (!ticket && (await read($, picking))) {
+      const failure = await read($, notice);
+      const groups = byStatus(current.work.tickets);
+      // The × sits at the top level, as in the no-ticket band, where the desktop draws its close.
       return (
-        <Box flexDirection="column">
-          <Box>
-            <Text dimColor wrap="truncate-end">
-              ○ No ticket for this session
-            </Text>
-            <Box flexGrow={1} />
-            <Button
-              key="hide"
-              plain
-              role="dismiss"
-              label="×"
-              onPress={() => update($, hidden, () => true)}
-            />
+        <Box>
+          <Box flexDirection="column" flexGrow={1} gap={1}>
+            <Box gap={1}>
+              <Text weight="bold">Pick a ticket for this session</Text>
+              <Box flexGrow={1} />
+              <Button key="file" label="File one instead" onPress={() => fileOne($)} />
+            </Box>
+            {failure ? <Text color="error">{failure}</Text> : null}
+            {groups.length ? null : <Text dimColor>No open tickets are yours.</Text>}
+            {groups.map((group) => (
+              <Box key={`group-${group.category}-${group.name}`} flexDirection="column">
+                <Text weight="bold">{group.name.toUpperCase()}</Text>
+                {group.tickets.map((item) => (
+                  <Button
+                    key={`choose-${item.id}`}
+                    plain
+                    onPress={() => choose($, item.identifier)}
+                  >
+                    🎟️ <Text weight="bold">{item.identifier}:</Text> {item.title}
+                  </Button>
+                ))}
+              </Box>
+            ))}
           </Box>
-          <Box gap={1}>
-            <Text dimColor wrap="truncate-end">
-              {current.session.branch
-                ? `branch ${current.session.branch} names no ticket`
-                : "no branch names a ticket"}
-            </Text>
-            <Box flexGrow={1} />
-            <Button
-              key="pick"
-              hotkey="t"
-              label="Pick a ticket"
-              onPress={() => openPane($, "work")}
-            />
-            <Button
-              key="file"
-              hotkey="f"
-              label="File one for this"
-              onPress={() => $.prompt.fill({ text: "File a ticket for this work" })}
-            />
-          </Box>
+          <Button
+            key="cancel"
+            plain
+            role="dismiss"
+            label="×"
+            onPress={() => update($, picking, () => false)}
+          />
         </Box>
       );
-    const waiting = current.work.tickets.find((item) => item.here)?.needsYou ?? null;
-    return (
-      <Box flexDirection="column">
-        <Box>
-          <Text color={waiting ? "warning" : "suggestion"}>
-            {STAGE_GLYPHS[ticket.status.category]}{" "}
-          </Text>
-          <Text weight="bold" color="suggestion">
-            {ticket.identifier}
-          </Text>
-          <Text wrap="truncate-end"> {ticket.title}</Text>
-          {waiting ? <Text color="warning"> · Needs you</Text> : null}
-          <Box flexGrow={1} />
-          <Text dimColor wrap="truncate-start">
-            {" "}
-            {track(ticket.status.category)}
-          </Text>
-        </Box>
+    }
+    // One row: the desktop draws a button taller than a text row, so a second row would crowd it.
+    if (!ticket)
+      return (
         <Box gap={1}>
-          {waiting ? (
-            <Text color="warning" wrap="truncate-end">
-              waiting on you: {waiting}
-            </Text>
-          ) : (
-            <Box gap={1} flexShrink={1}>
-              <Text color="suggestion">{meter(ticket.checklist.done, ticket.checklist.total)}</Text>
-              <Text dimColor>
-                {ticket.checklist.done}/{ticket.checklist.total}
-              </Text>
-              <Text wrap="truncate-end">
-                {ticket.next ? `next: ${ticket.next}` : "no Clanker items left"}
-              </Text>
-            </Box>
-          )}
-          <Box flexGrow={1} />
-          <Button key="ticket" hotkey="t" label="Ticket" onPress={() => openPane($, "ticket")} />
-          {work}
-        </Box>
-        {changes ? (
           <Text dimColor wrap="truncate-end">
-            this turn · {changes}
+            ○ No ticket for this session
           </Text>
-        ) : null}
+          <Box flexGrow={1} />
+          <Button key="pick" label="Pick a ticket" onPress={() => update($, picking, () => true)} />
+          <Button key="file" label="File one for this" onPress={() => fileOne($)} />
+          <Button
+            key="hide"
+            plain
+            role="dismiss"
+            label="×"
+            onPress={() => update($, hidden, () => true)}
+          />
+        </Box>
+      );
+    const status = ticket.status.name.toUpperCase();
+    const alt = `${ticket.checklist.done} of ${ticket.checklist.total} checklist items done, ${ticket.checklist.inProgress} in progress`;
+    const open = await read($, expanded);
+    const failure = await read($, notice);
+    // On the desktop a click on the ID opens the ticket in the app's browser pane, and a cmd or
+    // ctrl click opens it as any link does, in the person's browser. The opening runs apart from
+    // the press, whose hook has ten seconds, since the browser may wait on an approval. The
+    // terminal has no browser pane, so there the ID is a plain link.
+    const id =
+      e.surface === "terminal" ? (
+        <Link href={ticket.url}>
+          <Text weight="bold">{ticket.identifier}</Text>
+        </Link>
+      ) : (
+        <Markdown
+          key="ticket-id"
+          text={`[**${ticket.identifier}**](${ticket.url})`}
+          onLinkPress={(link) => void browse($, link.href)}
+        />
+      );
+    // A raised hand after the bar when anything waits on the person, this ticket or another: a
+    // link to My clankers, opened in the app's browser pane as the ID's page is.
+    const waiting = current.work.needsYou > 0 || ticket.needsHuman !== null;
+    const hand = !waiting ? null : e.surface === "terminal" ? (
+      <Link href={current.work.url} label={NEEDS_YOU} />
+    ) : (
+      <Markdown
+        key="needs-you"
+        text={`[${NEEDS_YOU}](${current.work.url})`}
+        onLinkPress={(link) => void browse($, link.href)}
+      />
+    );
+    // The terminal draws no Svg, so it lays the bar out in cells across the band's last third,
+    // less the status before it; work in progress is light green there.
+    let bar;
+    if (e.surface === "terminal") {
+      const third = Math.floor((e.props.bodyColumns - 1) / 3);
+      // The raised hand draws two cells wide, then its gap.
+      const hand = waiting ? 3 : 0;
+      const cells = barCells(ticket.checklist, third - STATUS_GAP - status.length - 1 - hand);
+      bar = (
+        <Text>
+          <Text color="success">{"━".repeat(cells.done)}</Text>
+          <Text color={WEBSITE_COLORS.light.started}>{"━".repeat(cells.inProgress)}</Text>
+          <Text dimColor>{"━".repeat(cells.rest)}</Text>
+        </Text>
+      );
+    } else {
+      const { Svg } = $.ui.resolve(e);
+      const ends = barEnds(ticket.checklist);
+      // A drawing stretches to its box, so the rounded ends are drawings of their own. The desktop
+      // draws no Svg whose alt is empty, so each has one.
+      bar = (
+        <Box flexGrow={1}>
+          <Svg source={capSvg("left", ends.left)} alt="Progress start" width={3} height={6} />
+          <Box flexGrow={1}>
+            <Svg source={barSvg(ticket.checklist)} alt={alt} height={6} />
+          </Box>
+          <Svg source={capSvg("right", ends.right)} alt="Progress end" width={3} height={6} />
+        </Box>
+      );
+    }
+    // The status opens and closes the checklist. On the desktop it is a bold link in the link's
+    // blue, a cmd or ctrl click opening the ticket's page; a terminal reports no click on a link,
+    // so there it is a button.
+    const toggle =
+      e.surface === "terminal" ? (
+        <Button key="toggle" plain onPress={() => update($, expanded, (shown) => !shown)}>
+          {status}
+        </Button>
+      ) : (
+        <Markdown
+          key="toggle"
+          text={`[**${status}**](${ticket.url})`}
+          onLinkPress={() => update($, expanded, (shown) => !shown)}
+        />
+      );
+    // Each item's checkbox, right beside the button that cycles it, since a Button holds text
+    // alone: the website's on the desktop, all one size so they align, and glyphs on the terminal.
+    const mark = (state: ItemState) => {
+      if (e.surface === "terminal")
+        return <Text color={ITEM_COLORS[state]}>{ITEM_GLYPHS[state]} </Text>;
+      const { Svg } = $.ui.resolve(e);
+      return <Svg source={itemSvg(state)} alt={ITEM_ALTS[state]} width={14} height={14} />;
+    };
+    // The × sits at the top level, as in the no-ticket band, where the desktop draws its close at
+    // the band's trailing edge, out of the layout.
+    return (
+      <Box>
+        <Box flexDirection="column" flexGrow={1}>
+          {/* Two columns: the ticket in two thirds, and its status, the checklist's toggle, and
+              progress in the last third. Below, over the open checklist, a step of room: the
+              desktop's own small space, no rows on the terminal. */}
+          <Box alignItems="center" paddingBottom={open ? "sm" : 0}>
+            <Box width="67%" alignItems="center">
+              {id}
+              <Text wrap="truncate-end">: {ticket.title}</Text>
+            </Box>
+            <Box width="33%" gap={1} alignItems="center" paddingLeft={STATUS_GAP}>
+              {/* Held at its own width: a Markdown block shrinks to a letter a line beside the
+                  growing bar. */}
+              <Box flexShrink={0}>{toggle}</Box>
+              {bar}
+              {hand ? <Box flexShrink={0}>{hand}</Box> : null}
+            </Box>
+          </Box>
+          {failure ? <Text color="error">{failure}</Text> : null}
+          {/* The current status's checklist, under the title and headed by the status: a click on
+              an item moves it to its next state with the person's own sign-in. */}
+          {open ? (
+            <Box flexDirection="column">
+              <Box paddingY="xs">
+                <Text weight="bold" mono>
+                  {status}
+                </Text>
+              </Box>
+              {ticket.items.map((item) => (
+                <Box key={`item-${item.id}`} alignItems="center">
+                  {mark(itemState(item))}
+                  <Button
+                    key={`cycle-${item.id}`}
+                    plain
+                    onPress={() => advance($, ticket.identifier, item)}
+                  >
+                    {item.title}
+                    {item.doer === "human" ? <Text dimColor> · Human</Text> : null}
+                  </Button>
+                </Box>
+              ))}
+              {ticket.items.length ? null : <Text dimColor>No checklist for this status.</Text>}
+            </Box>
+          ) : null}
+        </Box>
+        <Button
+          key="hide"
+          plain
+          role="dismiss"
+          label="×"
+          onPress={() => update($, hidden, () => true)}
+        />
       </Box>
     );
   });
@@ -395,7 +552,7 @@ async function take($: EngineInterface, text: string) {
     return;
   }
   if (line.type === "status") await update($, connected, () => line.connected);
-  else if (line.type === "view") await update($, view, () => line.view);
+  else if (line.type === "view") await show($, line.view);
   // A message starts a turn: at once in an idle session, after the turn in a busy one.
   else if (line.type === "message") void $.prompt.submit({ text: line.text });
 }
@@ -446,13 +603,21 @@ async function connect($: EngineInterface) {
   }
 }
 
+/** Takes the session's latest view; a ticket other than the one shown brings back a closed band. */
+async function show($: EngineInterface, latest: View) {
+  const shown = await read($, view);
+  if (shown?.ticket?.id !== latest.ticket?.id) await update($, hidden, () => false);
+  await update($, view, () => latest);
+}
+
 /** Ends the connection and forgets what the session showed. */
 async function disconnect($: EngineInterface) {
   connection?.stop();
   connection = null;
   await update($, view, () => null);
-  await update($, turn, () => null);
   await update($, hidden, () => false);
+  await update($, picking, () => false);
+  await update($, expanded, () => false);
 }
 
 /** Connects again once a /clear has moved the process to its new session. */
@@ -480,9 +645,100 @@ async function pick($: EngineInterface, ticket: string) {
     await update($, notice, () => picked.error);
     return picked.error;
   }
-  await update($, view, () => picked.value);
+  await show($, picked.value);
   await update($, notice, () => null);
   return `This session works on ${picked.value.ticket?.identifier ?? ticket} now.`;
+}
+
+/** Makes a ticket from the band's picker the session's, and closes the picker once it is. */
+async function choose($: EngineInterface, ticket: string) {
+  await pick($, ticket);
+  if (!(await read($, notice))) await update($, picking, () => false);
+}
+
+/** The desktop app's tools for its browser pane, beside the chat, and for showing that pane. */
+const BROWSER = {
+  tabs: "mcp__Claude_Browser__tabs_context",
+  open: "mcp__Claude_Browser__preview_start",
+  navigate: "mcp__Claude_Browser__navigate",
+  front: "mcp__Claude_Browser__tabs_select",
+  show: "mcp__ccd_view__show_pane",
+} as const;
+
+/**
+ * Opens a page in the desktop app's browser pane with the app's own tools, called as the model
+ * calls them, and says in the band only when it fails; the cmd or ctrl click stays the way out.
+ */
+async function browse($: EngineInterface, url: string) {
+  const instead = "Cmd or ctrl click the link to open it in your browser.";
+  if (!(await $.tool.list()).some((tool) => tool.name === BROWSER.open)) {
+    await update($, notice, () => `This session has no browser pane. ${instead}`);
+    return;
+  }
+  await update($, notice, () => null);
+  const failure = await Promise.race([
+    browseInPane($, url).then(
+      () => null,
+      (error: unknown) => (error instanceof Error ? error.message : String(error)),
+    ),
+    $.clock.sleep(30_000).then(() => "The app's browser didn't answer in 30 seconds."),
+  ]);
+  await update($, notice, () => (failure ? `${failure} ${instead}` : null));
+}
+
+/**
+ * Shows a page in the browser pane's tab on its site, the one tab reused click after click, or a
+ * new tab when there is none, then brings the pane into view.
+ */
+async function browseInPane($: EngineInterface, url: string) {
+  const listed = await useTool($, BROWSER.tabs, {});
+  const tabs = [...listed.matchAll(TAB_PATTERN)].map(([, tabId = "", origin = ""]) => ({
+    tabId,
+    origin,
+  }));
+  if (!tabs.length && !listed.includes("browserOpen"))
+    throw new Error(`The browser's tab list didn't read: ${listed.slice(0, 160)}`);
+  const site = /^[a-z]+:\/\/[^/]+/i.exec(url)?.[0];
+  const tab = tabs.find((each) => each.origin === site);
+  if (tab) {
+    await useTool($, BROWSER.navigate, { url, tabId: tab.tabId });
+    await useTool($, BROWSER.front, { tabId: tab.tabId });
+  } else await useTool($, BROWSER.open, { url });
+  await useTool($, BROWSER.show, { pane: "preview" });
+}
+
+/** Space between JSON's parts, plain or quoted inside other text, where a line break is `\n`. */
+const GAP = String.raw`(?:\s|\\[nrt])*`;
+/** A JSON quote, plain or escaped. */
+const QUOTE = String.raw`\\*"`;
+/**
+ * One tab of the browser's tab list: its ID, then its origin. The list is JSON in what the model
+ * reads, and may come quoted inside other text, so the pattern reads it either way.
+ */
+const TAB_PATTERN = new RegExp(
+  `tabId${QUOTE}${GAP}:${GAP}${QUOTE}([^"\\\\]+)${QUOTE}${GAP},${GAP}${QUOTE}origin${QUOTE}${GAP}:${GAP}${QUOTE}([^"\\\\]+)`,
+  "g",
+);
+
+/**
+ * Runs one of the session's tools as the model would: its answer as the text the model reads, or
+ * its raw result where it has none, or why it failed.
+ */
+async function useTool(
+  $: EngineInterface,
+  tool: `mcp__${string}__${string}`,
+  input: Record<string, unknown>,
+) {
+  const done = await $.tool.call({ ...input, tool });
+  if (done.deny) throw new Error(done.deny);
+  if (done.isError) throw new Error(done.text ?? `${tool} failed.`);
+  return done.text ?? JSON.stringify(done.result ?? "");
+}
+
+/** Asks Claude to file a ticket for the work, from the no-ticket band or its picker. */
+async function fileOne($: EngineInterface) {
+  await update($, picking, () => false);
+  await $.prompt.fill({ text: "File a ticket for this work" });
 }
 
 /** Checks a Human item with the person's own sign-in: their click is their approval. */
@@ -491,15 +747,35 @@ async function check($: EngineInterface, ticket: string, item: string) {
   await update($, notice, () => (checked.ok ? null : checked.error));
 }
 
-/** Puts the turn's changes on the band. */
-async function showChanges($: EngineInterface) {
-  const changes = await run<{ line: string | null }>($, [
-    "session",
-    "changes",
-    "--session",
-    await $.session.id(),
+/**
+ * Moves a checklist item to its next state, drawn at once so clicks in a row keep cycling; the
+ * view the connection brings next holds the change as Clanker Ship made it.
+ */
+async function advance($: EngineInterface, ticket: string, item: ViewItem) {
+  const state = NEXT_STATE[itemState(item)];
+  await update($, view, (shown) =>
+    shown?.ticket
+      ? {
+          ...shown,
+          ticket: {
+            ...shown.ticket,
+            items: shown.ticket.items.map((entry) =>
+              entry.id === item.id
+                ? { ...entry, done: state === "done", inProgress: state === "in_progress" }
+                : entry,
+            ),
+          },
+        }
+      : shown,
+  );
+  const changed = await run<unknown>($, [
+    "ticket",
+    "checklist",
+    STATE_COMMANDS[state],
+    ticket,
+    item.id,
   ]);
-  if (changes.ok && changes.value.line) await update($, turn, () => changes.value.line);
+  await update($, notice, () => (changed.ok ? null : changed.error));
 }
 
 /** A work ticket's second line: what it waits on the person for, or its stage, and where it is live. */
@@ -513,15 +789,109 @@ function workDetail(item: WorkTicket) {
   return state + live;
 }
 
-/** The checklist's progress as eight cells, filled by the share done. */
-function meter(done: number, total: number) {
-  const filled = total ? Math.round((done / total) * 8) : 0;
-  return `${"■".repeat(filled)}${"□".repeat(8 - filled)}`;
+/** The checklist's progress over `width` cells: done, then in progress, then the rest. */
+function barCells({ done, inProgress, total }: Progress, width: number) {
+  const cells = Math.max(width, 0);
+  const upTo = (count: number) => (total ? Math.round((count / total) * cells) : 0);
+  const filled = upTo(done);
+  const started = upTo(done + inProgress);
+  return { done: filled, inProgress: started - filled, rest: cells - started };
 }
 
-/** The six stages, the current one in capitals, as the website's stage track reads. */
-function track(stage: Stage) {
-  return STAGES.map((item) =>
-    item === stage ? STAGE_LABELS[item].toUpperCase() : STAGE_LABELS[item].toLowerCase(),
-  ).join(" · ");
+/** A drawing's style in the website's colors, light then dark as the surface prefers. */
+function websiteStyle(rules: (colors: Colors) => string) {
+  return `<style>${rules(WEBSITE_COLORS.light)}@media (prefers-color-scheme: dark){${rules(WEBSITE_COLORS.dark)}}</style>`;
+}
+
+/** The bar's parts: the faint cobalt track, done in green, work in progress in a lighter green. */
+type BarPart = "t" | "d" | "p";
+const BAR_STYLE = websiteStyle(
+  (colors) =>
+    `.t{fill:${colors.primary};fill-opacity:.2}.d{fill:${colors.success}}.p{fill:${colors.started}}`,
+);
+
+/**
+ * The checklist's progress, less its rounded ends: done in green, then work in progress in a
+ * lighter green. The drawing is wider than any band and stretches to the box it gets, so it fills
+ * the rest of the row.
+ */
+function barSvg({ done, inProgress, total }: Progress) {
+  const WIDTH = 4000;
+  const at = (count: number) => (total ? Math.round((count / total) * WIDTH) : 0);
+  return [
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="6" viewBox="0 0 ${WIDTH} 6" preserveAspectRatio="none">`,
+    BAR_STYLE,
+    `<rect class="t" width="${WIDTH}" height="6"/>`,
+    `<rect class="d" width="${at(done)}" height="6"/>`,
+    `<rect class="p" x="${at(done)}" width="${at(done + inProgress) - at(done)}" height="6"/>`,
+    "</svg>",
+  ].join("");
+}
+
+/** The parts the bar starts and ends on, which its rounded ends take the color of. */
+function barEnds({ done, inProgress, total }: Progress): { left: BarPart; right: BarPart } {
+  const left = done ? "d" : inProgress ? "p" : "t";
+  const right = !total || done + inProgress < total ? "t" : inProgress ? "p" : "d";
+  return { left, right };
+}
+
+/** A group of the picker's tickets: one status, its tickets in the order they came. */
+type StatusGroup = { name: string; category: Stage; tickets: WorkTicket[] };
+
+/** Tickets grouped by status, work furthest along first, each group's sorted by team. */
+function byStatus(tickets: WorkTicket[]): StatusGroup[] {
+  const groups = new Map<string, StatusGroup>();
+  for (const item of tickets) {
+    const key = `${item.status.category}/${item.status.name}`;
+    const group = groups.get(key) ?? {
+      name: item.status.name,
+      category: item.status.category,
+      tickets: [],
+    };
+    group.tickets.push(item);
+    groups.set(key, group);
+  }
+  for (const group of groups.values())
+    group.tickets.sort((a, b) => teamKey(a).localeCompare(teamKey(b)));
+  return [...groups.values()].sort(
+    (a, b) => GROUP_ORDER.indexOf(a.category) - GROUP_ORDER.indexOf(b.category),
+  );
+}
+
+/** A ticket's team key, which leads its ID: `WEB` of `WEB-31`. */
+function teamKey(item: WorkTicket) {
+  return item.identifier.slice(0, item.identifier.lastIndexOf("-"));
+}
+
+function itemState(item: ViewItem): ItemState {
+  return item.done ? "done" : item.inProgress ? "in_progress" : "not_started";
+}
+
+/**
+ * The checkbox's parts: its empty outline, filled green when done, and in progress tinted with a
+ * square in the bar's lighter green.
+ */
+const ITEM_STYLE = websiteStyle(
+  (colors) =>
+    `.o{fill:none;stroke:${colors.muted};stroke-opacity:.6}.d{fill:${colors.success}}.p{fill:${colors.started};fill-opacity:.35;stroke:${colors.started}}.s{fill:${colors.started}}.c{fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}`,
+);
+
+/**
+ * A checklist item's checkbox as the website draws it: a 16-pixel rounded square, with Lucide's
+ * check when done and a small square while in progress.
+ */
+function itemSvg(state: ItemState) {
+  const inside =
+    state === "done"
+      ? '<rect class="d" width="16" height="16" rx="4"/><path class="c" transform="translate(1 1) scale(.5833)" d="M20 6 9 17l-5-5"/>'
+      : state === "in_progress"
+        ? '<rect class="p" x=".5" y=".5" width="15" height="15" rx="3.5"/><rect class="s" x="4" y="4" width="8" height="8" rx="2"/>'
+        : '<rect class="o" x=".5" y=".5" width="15" height="15" rx="3.5"/>';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">${ITEM_STYLE}${inside}</svg>`;
+}
+
+/** One rounded end of the bar: a half circle as tall as the bar. */
+function capSvg(side: "left" | "right", part: BarPart) {
+  const half = side === "left" ? "M3 0A3 3 0 0 0 3 6Z" : "M0 0A3 3 0 0 1 0 6Z";
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="3" height="6" viewBox="0 0 3 6">${BAR_STYLE}<path class="${part}" d="${half}"/></svg>`;
 }
