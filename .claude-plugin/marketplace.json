@@ -4,7 +4,7 @@
   "description": "Official Clanker Ship plugin for Claude Code and Codex.",
   "owner": {
     "name": "Clanker Byte, LLC",
-    "email": "support@clankertest.com"
+    "email": "support@clankership.com"
   },
   "plugins": [
     {
@@ -12,9 +12,9 @@
       "description": "Write validation tests for your product from your clanker, using Clanker Ship. Installs the Clanker CLI (about 320 MB, with Chrome) on first use.",
       "author": {
         "name": "Clanker Byte, LLC",
-        "email": "support@clankertest.com"
+        "email": "support@clankership.com"
       },
-      "homepage": "https://clankertest.com",
+      "homepage": "https://clankership.com",
       "repository": "https://github.com/clankership/plugin",
       "license": "MIT",
       "source": "./",

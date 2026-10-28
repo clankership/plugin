@@ -5,7 +5,7 @@
 # Usage: session-start.sh <claude|cursor|codex>
 HOST="${1:-claude}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SITE="$(cat "$ROOT/site.txt" 2>/dev/null || echo https://clankertest.com)"
+SITE="$(cat "$ROOT/site.txt" 2>/dev/null || echo https://clankership.com)"
 
 case "$(uname -s)" in
   MINGW* | MSYS* | CYGWIN*)

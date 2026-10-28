@@ -4,7 +4,7 @@
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # In a Clanker Ship checkout, `pnpm plugin:dev` writes .dev/clanker: the checkout's own CLI.
 if [ -x "$ROOT/.dev/clanker" ]; then exec "$ROOT/.dev/clanker" "$@"; fi
-SITE="$(cat "$ROOT/site.txt" 2>/dev/null || echo https://clankertest.com)"
+SITE="$(cat "$ROOT/site.txt" 2>/dev/null || echo https://clankership.com)"
 SHARE="$HOME/.local/share/clanker"
 CLI="$HOME/.local/bin/clanker"
 LOCK="$SHARE/update/plugin-install.lock"

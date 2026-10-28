@@ -4,9 +4,9 @@ Give your clanker the Clanker Ship workflow: every task gets a ticket that moves
 from Scope to Plan, Build, Review and Ship, with tests the clanker writes and
 proof you review.
 
-- Product: [clankertest.com](https://clankertest.com)
+- Product: [clankership.com](https://clankership.com)
 - Publisher: Clanker Byte, LLC
-- Support: [support@clankertest.com](mailto:support@clankertest.com)
+- Support: [support@clankership.com](mailto:support@clankership.com)
 - Repository: [github.com/clankership/plugin](https://github.com/clankership/plugin)
 
 ## Install
@@ -45,7 +45,7 @@ Then start a new thread; Codex runs the plugin's `setup` skill.
 3. Ask your clanker to set up Clanker Ship, then give it a task, such as "Fix this
    bug" or "Build WEB-31".
 
-The production MCP server is `https://api.clankertest.com/mcp`.
+The production MCP server is `https://api.clankership.com/mcp`.
 
 ## What the clanker can do
 
@@ -94,13 +94,13 @@ MIT. Copyright (c) 2026 Clanker Byte, LLC.
 
 Adding this plugin installs the standalone `clanker` CLI, about 320 MB with its
 own Node, Playwright and Chrome. The first clanker session without the CLI starts
-the install in the background from clankertest.com and says so; `clanker`
+the install in the background from clankership.com and says so; `clanker`
 commands wait until it finishes. It installs into `~/.local/bin` and
 `~/.local/share/clanker` (Windows: `%LOCALAPPDATA%\Clanker`) and then updates
 itself in the background at most once an hour. Shell profiles are not modified;
 the hook adds the bin folder to PATH for clanker sessions that lack it. To install
-it yourself, run `curl -fsSL https://clankertest.com/install.sh | sh` (Windows:
-`irm https://clankertest.com/install.ps1 | iex`).
+it yourself, run `curl -fsSL https://clankership.com/install.sh | sh` (Windows:
+`irm https://clankership.com/install.ps1 | iex`).
 
 Run `clanker auth login` for browser approval, or supply `CLANKER_API_KEY` for
 automation. Use `clanker product`, `clanker environment`, `clanker deployment`,
@@ -112,6 +112,6 @@ Vault keys are runtime production-read credentials, never CLI login credentials.
 the CLI's own Playwright against that deployment of the linked product, so the
 project doesn't need Playwright installed, and publishes the run to the workspace.
 `clanker retry` runs failed tests again on the same commit and marks tests that
-then pass as flaky. The CLI always talks to clankertest.com. See the
-[test runs guide](https://docs.clankertest.com/get-started/concepts/test-runs) and the
-[vault and CLI guide](https://docs.clankertest.com/get-started/concepts/secrets-vault).
+then pass as flaky. The CLI always talks to clankership.com. See the
+[test runs guide](https://docs.clankership.com/get-started/concepts/test-runs) and the
+[vault and CLI guide](https://docs.clankership.com/get-started/concepts/secrets-vault).
