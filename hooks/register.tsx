@@ -656,22 +656,27 @@ async function choose($: EngineInterface, ticket: string) {
   if (!(await read($, notice))) await update($, picking, () => false);
 }
 
+/** A tool of one of the session's MCP servers, by the server's name and its own. */
+type McpTool = { server: string; tool: string };
+
 /** The desktop app's tools for its browser pane, beside the chat, and for showing that pane. */
 const BROWSER = {
-  tabs: "mcp__Claude_Browser__tabs_context",
-  open: "mcp__Claude_Browser__preview_start",
-  navigate: "mcp__Claude_Browser__navigate",
-  front: "mcp__Claude_Browser__tabs_select",
-  show: "mcp__ccd_view__show_pane",
-} as const;
+  tabs: { server: "Claude_Browser", tool: "tabs_context" },
+  open: { server: "Claude_Browser", tool: "preview_start" },
+  navigate: { server: "Claude_Browser", tool: "navigate" },
+  front: { server: "Claude_Browser", tool: "tabs_select" },
+  show: { server: "ccd_view", tool: "show_pane" },
+} as const satisfies Record<string, McpTool>;
 
 /**
- * Opens a page in the desktop app's browser pane with the app's own tools, called as the model
- * calls them, and says in the band only when it fails; the cmd or ctrl click stays the way out.
+ * Opens a page in the desktop app's browser pane with the app's own tools, and says in the band
+ * only when it fails; the cmd or ctrl click stays the way out.
  */
 async function browse($: EngineInterface, url: string) {
   const instead = "Cmd or ctrl click the link to open it in your browser.";
-  if (!(await $.tool.list()).some((tool) => tool.name === BROWSER.open)) {
+  const opener = `mcp__${BROWSER.open.server}__${BROWSER.open.tool}`;
+  pane.hasBrowser ??= (await $.tool.list()).some((tool) => tool.name === opener);
+  if (!pane.hasBrowser) {
     await update($, notice, () => `This session has no browser pane. ${instead}`);
     return;
   }
@@ -687,10 +692,27 @@ async function browse($: EngineInterface, url: string) {
 }
 
 /**
+ * What the session's clicks have learned of the browser pane: whether the session has one, and
+ * the tab its Clanker Ship pages open in. A reload of the mod forgets both.
+ */
+const pane: { hasBrowser: boolean | null; tab: string | null } = { hasBrowser: null, tab: null };
+
+/**
  * Shows a page in the browser pane's tab on its site, the one tab reused click after click, or a
- * new tab when there is none, then brings the pane into view.
+ * new tab when there is none, and brings the pane into view. Once the tab is known, a click loads
+ * the page, fronts the tab and shows the pane at once, so the pane opens while the page loads.
  */
 async function browseInPane($: EngineInterface, url: string) {
+  if (pane.tab) {
+    const tabId = pane.tab;
+    try {
+      await showInTab($, url, tabId);
+      return;
+    } catch {
+      // The tab was closed since: find another on the site, or open one.
+      pane.tab = null;
+    }
+  }
   const listed = await useTool($, BROWSER.tabs, {});
   const tabs = [...listed.matchAll(TAB_PATTERN)].map(([, tabId = "", origin = ""]) => ({
     tabId,
@@ -701,10 +723,23 @@ async function browseInPane($: EngineInterface, url: string) {
   const site = /^[a-z]+:\/\/[^/]+/i.exec(url)?.[0];
   const tab = tabs.find((each) => each.origin === site);
   if (tab) {
-    await useTool($, BROWSER.navigate, { url, tabId: tab.tabId });
-    await useTool($, BROWSER.front, { tabId: tab.tabId });
-  } else await useTool($, BROWSER.open, { url });
+    await showInTab($, url, tab.tabId);
+    pane.tab = tab.tabId;
+    return;
+  }
+  // A new tab answers with its ID: `Opened tab "tab-3" at …`.
+  const opened = await useTool($, BROWSER.open, { url });
+  pane.tab = /tab(?:Id)? "([^"]+)"/.exec(opened)?.[1] ?? null;
   await useTool($, BROWSER.show, { pane: "preview" });
+}
+
+/** Loads a page in one of the pane's tabs, fronts it and shows the pane, all at once. */
+async function showInTab($: EngineInterface, url: string, tabId: string) {
+  await Promise.all([
+    useTool($, BROWSER.navigate, { url, tabId }),
+    useTool($, BROWSER.front, { tabId }),
+    useTool($, BROWSER.show, { pane: "preview" }),
+  ]);
 }
 
 /** Space between JSON's parts, plain or quoted inside other text, where a line break is `\n`. */
@@ -712,8 +747,8 @@ const GAP = String.raw`(?:\s|\\[nrt])*`;
 /** A JSON quote, plain or escaped. */
 const QUOTE = String.raw`\\*"`;
 /**
- * One tab of the browser's tab list: its ID, then its origin. The list is JSON in what the model
- * reads, and may come quoted inside other text, so the pattern reads it either way.
+ * One tab of the browser's tab list: its ID, then its origin. The list is JSON followed by a line
+ * on the pane, and may come quoted inside other text, so the pattern reads it either way.
  */
 const TAB_PATTERN = new RegExp(
   `tabId${QUOTE}${GAP}:${GAP}${QUOTE}([^"\\\\]+)${QUOTE}${GAP},${GAP}${QUOTE}origin${QUOTE}${GAP}:${GAP}${QUOTE}([^"\\\\]+)`,
@@ -721,18 +756,19 @@ const TAB_PATTERN = new RegExp(
 );
 
 /**
- * Runs one of the session's tools as the model would: its answer as the text the model reads, or
- * its raw result where it has none, or why it failed.
+ * Calls one of the session's MCP tools as the plugin itself: its answer's text, or why it failed.
+ * The person's click is the grant, so no permission check runs; through `$.tool.call`, auto
+ * mode's classifier refuses a call that no request of the person's asked for.
  */
 async function useTool(
   $: EngineInterface,
-  tool: `mcp__${string}__${string}`,
+  { server, tool }: McpTool,
   input: Record<string, unknown>,
 ) {
-  const done = await $.tool.call({ ...input, tool });
-  if (done.deny) throw new Error(done.deny);
-  if (done.isError) throw new Error(done.text ?? `${tool} failed.`);
-  return done.text ?? JSON.stringify(done.result ?? "");
+  const done = await $.mcp.call(server, tool, input);
+  const text = done.content.map((block) => block.text ?? "").join("\n");
+  if (done.isError) throw new Error(text || `${tool} failed.`);
+  return text;
 }
 
 /** Asks Claude to file a ticket for the work, from the no-ticket band or its picker. */
