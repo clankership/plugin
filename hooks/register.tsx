@@ -307,7 +307,8 @@ export const register: Register = (on) => {
               desktop's own small space, no rows on the terminal. */}
           <Box alignItems="center" paddingBottom={open ? "sm" : 0}>
             <Box width="67%" alignItems="center">
-              {id}
+              {/* Held at its own width, so a long title is cut short rather than the ID wrapped. */}
+              <Box flexShrink={0}>{id}</Box>
               <Text wrap="truncate-end">: {ticket.title}</Text>
             </Box>
             <Box width="33%" gap={1} alignItems="center" paddingLeft={STATUS_GAP}>
