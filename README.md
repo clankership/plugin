@@ -62,8 +62,9 @@ The production MCP server is `https://api.clankership.com/mcp`.
   change runs in production. Clankers do a checklist's
   Clanker items and leave Human ones, such as Plan approved, to you, or check one
   with your words when you approve it in the conversation
-- Ask you a question when a decision is yours: the ticket shows Needs human, with
-  the question and an answer box, until you answer there or in the conversation
+- Raise a request when they need you: an approval, a choice, a fact or a step
+  only you can take. The ticket shows Needs human until you resolve it on the
+  ticket page or My clankers, or answer in the conversation
 - Name the session's ticket, its status, the next Clanker item and why it waits on
   you at each prompt, through the plugin's hook. In Claude Code the session is
   named after its ticket, a band above the prompt shows its status and a bar of

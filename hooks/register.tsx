@@ -234,7 +234,8 @@ export const register: Register = (on) => {
       );
     // A raised hand after the bar when anything waits on the person, this ticket or another: a
     // link to My clankers, opened in the app's browser pane as the ID's page is.
-    const waiting = current.work.needsYou > 0 || ticket.needsHuman !== null;
+    const waiting =
+      current.work.needsYou > 0 || ticket.requests.some((request) => request.blocking);
     const hand = !waiting ? null : e.surface === "terminal" ? (
       <Link href={current.work.url} label={NEEDS_YOU} />
     ) : (

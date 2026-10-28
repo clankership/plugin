@@ -24,7 +24,8 @@ export type ViewTicket = {
   checklist: Progress;
   next: string | null;
   items: ViewItem[];
-  needsHuman: { reasons: string[]; items: string[] } | null;
+  /** The ticket's open requests, blocking first; the band links to them. */
+  requests: { id: string; kind: string; title: string; blocking: boolean }[];
   documents: { name: string; slug: string; written: boolean }[];
 };
 
