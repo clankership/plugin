@@ -276,8 +276,9 @@ export const register: Register = (on) => {
       );
     }
     // The status opens and closes the checklist. On the desktop it is a bold link in the link's
-    // blue, a cmd or ctrl click opening the ticket's page; a terminal reports no click on a link,
-    // so there it is a button.
+    // blue, a cmd or ctrl click opening the ticket's page, since a desktop Button draws its text in
+    // its own font and color and would drop the bold. A terminal reports no click on a link, so
+    // there it is a button.
     const toggle =
       e.surface === "terminal" ? (
         <Button key="toggle" plain onPress={() => update($, expanded, (shown) => !shown)}>
@@ -333,6 +334,8 @@ export const register: Register = (on) => {
               {ticket.items.map((item) => (
                 <Box key={`item-${item.id}`} alignItems="center">
                   {mark(itemState(item))}
+                  {/* A desktop Button drops the color of a Text inside it, so `· Human` is dim
+                      only on the terminal. */}
                   <Button
                     key={`cycle-${item.id}`}
                     plain
@@ -527,7 +530,11 @@ export const register: Register = (on) => {
   });
 };
 
-/** The plugin's own `clanker`, which waits for an install the session hook started. */
+/**
+ * The plugin's own `clanker`, which waits for an install the session hook started. A process the
+ * mod starts gets no `CLAUDE_CODE_SESSION_ID`, so a command about the session names it with
+ * `--session`.
+ */
 async function cli($: EngineInterface, args: string[]) {
   const windows = (await $.env.get("OS")) === "Windows_NT";
   return [`${$.plugin.root}/bin/${windows ? "clanker.cmd" : "clanker"}`, ...args];
@@ -555,13 +562,16 @@ async function take($: EngineInterface, text: string) {
   }
   if (line.type === "status") await update($, connected, () => line.connected);
   else if (line.type === "view") await show($, line.view);
-  // A message starts a turn: at once in an idle session, after the turn in a busy one.
+  // A message starts a turn, shown as a message from the plugin: at once in an idle session, after
+  // the turn in a busy one.
   else if (line.type === "message") void $.prompt.submit({ text: line.text });
 }
 
 /**
  * Holds the session's connection for as long as the session lasts, starting the CLI again with
- * backoff when it ends; leaving the loop ends the child.
+ * backoff when it ends; leaving the loop ends the child. A child's standard input is written once
+ * and closed, so the CLI takes nothing from the mod: it prints the session's views, and the mod
+ * lays out the band itself.
  */
 async function connect($: EngineInterface) {
   const session = await $.session.id();
