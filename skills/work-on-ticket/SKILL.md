@@ -20,6 +20,10 @@ name, an item or an outline.
 
 ## In every status
 
+- Pass the workspace the Clanker Ship hook names for this repository as
+  `workspace` on every Clanker Ship tool call. With no hook line and a
+  person in several workspaces, `list_workspaces` lists them: ask which one.
+
 - A stage is a status category. Move a ticket with `update_ticket`: to the
   status its instructions name, else the next one in the team's order.
 - Call `get_ticket` before you change a ticket. People change tickets too.

@@ -29,6 +29,9 @@ their notifications.
    Ship tools until the person signs in: when `show_work` is missing there, ask
    them to type `/mcp`, choose `plugin:clanker-ship:clanker-ship`, choose
    Authenticate and finish the sign-in in their browser, then ask you again.
+   One sign-in works in every workspace they belong to. When they belong to
+   several, a call that names no workspace is refused with the list: pass the
+   one the session's hook names as `workspace`, or ask them which one.
 2. Call `read_settings`. Tell the person their default team, which new tickets go
    to when they name none, and whether new messages wake an idle Codex thread.
 3. Ask whether to change either. Change them with `update_settings`, for example
