@@ -53,8 +53,8 @@ and ask in the conversation too. The request shows the wait on the ticket, in
 their notifications and on My clankers, so they can answer wherever they are.
 
 - Pick the kind by what you need:
-  - `approve`: a review of something you made, such as a design, a preview or
-    a change to the test cases.
+  - `approve`: a review of something you made, such as a design or a
+    preview.
   - `choose`: a decision that changes what gets built or tested, such as a
     Scope's open question, with two to six options, the one you recommend
     first.
@@ -145,10 +145,9 @@ checklist's progress. The ticket you create or link with `create_ticket`, `link_
 - After each step, add its entry to the Build record: what you did, the files,
   the commits and the runs. Never write the record at the end.
 - Record each decision, deviation and failure, with its fix, as it happens.
-- When a test case must change, change it in the Plan, record the deviation,
-  add a Human item "Test case changes approved" to the Build checklist and
-  raise an Approve request on it. Don't build on the changed cases until it
-  is checked.
+- When a test case must change, change it and the Plan, record the deviation,
+  tell your person what changed and why, and keep going. A change to the test
+  cases needs no approval.
 - When the checklist is done, open the pull request from the ticket's branch
   and link it with `link_ticket_pull_request`, passing the link `gh pr create`
   prints. Work in several repositories links one pull request per repository.
