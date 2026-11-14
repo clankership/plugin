@@ -57,8 +57,13 @@ declare module "claude-code" {
     "clanker-ship": {
       /** The latest session view, null until the connection brings one. */
       view: View | null;
-      /** Whether `clanker session connect` holds the connection. */
+      /** Whether `clanker session connect` holds the connection; while it doesn't, the view is old. */
       connected: boolean;
+      /**
+       * The last line `clanker session connect` wrote to stderr, or why it couldn't start; the pane
+       * shows it while the session isn't connected, and a connection clears it.
+       */
+      connectError: string | null;
       /** The band's ×, until the session's ticket changes or /ticket shows it again. */
       hidden: boolean;
       /** Whether the no-ticket band shows its ticket picker. */

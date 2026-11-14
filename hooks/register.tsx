@@ -11,6 +11,7 @@ const PANE = "clanker-ship";
 
 const view = atom({ plugin: "clanker-ship", key: "view" } as const, null);
 const connected = atom({ plugin: "clanker-ship", key: "connected" } as const, false);
+const connectError = atom({ plugin: "clanker-ship", key: "connectError" } as const, null);
 const hidden = atom({ plugin: "clanker-ship", key: "hidden" } as const, false);
 const tab = atom({ plugin: "clanker-ship", key: "tab" } as const, "ticket");
 const notice = atom({ plugin: "clanker-ship", key: "notice" } as const, null);
@@ -33,6 +34,9 @@ const NEEDS_YOU = "🙋‍♂️";
 
 /** The columns between the ticket's title and its status. */
 const STATUS_GAP = 2;
+
+/** The band's mark on a status the session's connection no longer keeps current. */
+const NOT_LIVE = "not live";
 
 /** The website's colors the band's drawings use, light then dark; work in progress is a lighter green. */
 const WEBSITE_COLORS = {
@@ -213,7 +217,10 @@ export const register: Register = (on) => {
         </Box>
       );
     const status = ticket.status.name.toUpperCase();
-    const alt = `${ticket.checklist.done} of ${ticket.checklist.total} checklist items done, ${ticket.checklist.inProgress} in progress`;
+    // While the session isn't connected the view is as old as the connection's end, so the status
+    // and its bar are dimmed and a button that opens the pane, which says why, marks them not live.
+    const live = await read($, connected);
+    const alt = `${ticket.checklist.done} of ${ticket.checklist.total} checklist items done, ${ticket.checklist.inProgress} in progress${live ? "" : ", not live"}`;
     const open = await read($, expanded);
     const failure = await read($, notice);
     // On the desktop a click on the ID opens the ticket in the app's browser pane, and a cmd or
@@ -235,7 +242,7 @@ export const register: Register = (on) => {
     // A raised hand after the bar when anything waits on the person, this ticket or another: a
     // link to My clankers, opened in the app's browser pane as the ID's page is.
     const waiting =
-      current.work.needsYou > 0 || ticket.requests.some((request) => request.blocking);
+      live && (current.work.needsYou > 0 || ticket.requests.some((request) => request.blocking));
     const hand = !waiting ? null : e.surface === "terminal" ? (
       <Link href={current.work.url} label={NEEDS_YOU} />
     ) : (
@@ -245,33 +252,54 @@ export const register: Register = (on) => {
         onLinkPress={(link) => void browse($, link.href)}
       />
     );
+    const notLive = live ? null : e.surface === "terminal" ? (
+      <Button key="not-live" plain onPress={() => openPane($, "ticket")}>
+        <Text color="warning">{NOT_LIVE}</Text>
+      </Button>
+    ) : (
+      <Button key="not-live" plain label={NOT_LIVE} onPress={() => openPane($, "ticket")} />
+    );
     // The terminal draws no Svg, so it lays the bar out in cells across the band's last third,
-    // less the status before it; work in progress is light green there.
+    // less the status before it; work in progress is light green there, and all of it dim while
+    // the session isn't live.
     let bar;
     if (e.surface === "terminal") {
       const third = Math.floor((e.props.bodyColumns - 1) / 3);
-      // The raised hand draws two cells wide, then its gap.
-      const hand = waiting ? 3 : 0;
-      const cells = barCells(ticket.checklist, third - STATUS_GAP - status.length - 1 - hand);
-      bar = (
+      // The raised hand draws two cells wide, then its gap; not live takes its own width.
+      const after = live ? (waiting ? 3 : 0) : NOT_LIVE.length + 1;
+      const cells = barCells(ticket.checklist, third - STATUS_GAP - status.length - 1 - after);
+      bar = live ? (
         <Text>
           <Text color="success">{"━".repeat(cells.done)}</Text>
           <Text color={WEBSITE_COLORS.light.started}>{"━".repeat(cells.inProgress)}</Text>
           <Text dimColor>{"━".repeat(cells.rest)}</Text>
         </Text>
+      ) : (
+        <Text dimColor>{"━".repeat(cells.done + cells.inProgress + cells.rest)}</Text>
       );
     } else {
       const { Svg } = $.ui.resolve(e);
       const ends = barEnds(ticket.checklist);
+      const style = live ? BAR_STYLE : STALE_BAR_STYLE;
       // A drawing stretches to its box, so the rounded ends are drawings of their own. The desktop
       // draws no Svg whose alt is empty, so each has one.
       bar = (
         <Box flexGrow={1}>
-          <Svg source={capSvg("left", ends.left)} alt="Progress start" width={3} height={6} />
+          <Svg
+            source={capSvg("left", ends.left, style)}
+            alt="Progress start"
+            width={3}
+            height={6}
+          />
           <Box flexGrow={1}>
-            <Svg source={barSvg(ticket.checklist)} alt={alt} height={6} />
+            <Svg source={barSvg(ticket.checklist, style)} alt={alt} height={6} />
           </Box>
-          <Svg source={capSvg("right", ends.right)} alt="Progress end" width={3} height={6} />
+          <Svg
+            source={capSvg("right", ends.right, style)}
+            alt="Progress end"
+            width={3}
+            height={6}
+          />
         </Box>
       );
     }
@@ -281,13 +309,19 @@ export const register: Register = (on) => {
     // there it is a button.
     const toggle =
       e.surface === "terminal" ? (
-        <Button key="toggle" plain onPress={() => update($, expanded, (shown) => !shown)}>
+        <Button
+          key="toggle"
+          plain
+          dimColor={!live}
+          onPress={() => update($, expanded, (shown) => !shown)}
+        >
           {status}
         </Button>
       ) : (
         <Markdown
           key="toggle"
           text={`[**${status}**](${ticket.url})`}
+          dimColor={!live}
           onLinkPress={() => update($, expanded, (shown) => !shown)}
         />
       );
@@ -319,6 +353,7 @@ export const register: Register = (on) => {
               <Box flexShrink={0}>{toggle}</Box>
               {bar}
               {hand ? <Box flexShrink={0}>{hand}</Box> : null}
+              {notLive ? <Box flexShrink={0}>{notLive}</Box> : null}
             </Box>
           </Box>
           {failure ? <Text color="error">{failure}</Text> : null}
@@ -366,6 +401,24 @@ export const register: Register = (on) => {
     const current = await read($, view);
     const which = await read($, tab);
     const failure = await read($, notice);
+    const live = await read($, connected);
+    const trouble = await read($, connectError);
+    // While the session isn't connected, what the pane shows is as old as the connection's end:
+    // it says so under the tabs, with the connection's last error.
+    const lastError = trouble ? (
+      <Text dimColor wrap="wrap">
+        {trouble}
+      </Text>
+    ) : null;
+    const stale = live ? null : (
+      <Box flexDirection="column">
+        <Text color="warning">
+          Not live. This is {which === "work" ? "your work" : "the ticket"} as Clanker Ship last
+          sent it.
+        </Text>
+        {lastError}
+      </Box>
+    );
     const tabs = (
       <Box gap={2}>
         <Button
@@ -391,10 +444,11 @@ export const register: Register = (on) => {
         <Box flexDirection="column">
           {tabs}
           <Text dimColor>
-            {(await read($, connected))
+            {live
               ? "Reading the session…"
               : "Connecting to Clanker Ship… The Clanker CLI connects once it is installed and signed in."}
           </Text>
+          {live ? null : lastError}
         </Box>
       );
     if (which === "work") {
@@ -429,6 +483,7 @@ export const register: Register = (on) => {
       return (
         <Box flexDirection="column" gap={1}>
           {tabs}
+          {stale}
           {failure ? <Text color="error">{failure}</Text> : null}
           {tickets.length ? null : <Text dimColor>No open tickets are yours.</Text>}
           {needing.length ? (
@@ -455,6 +510,7 @@ export const register: Register = (on) => {
       return (
         <Box flexDirection="column" gap={1}>
           {tabs}
+          {stale}
           <Text dimColor>No ticket for this session.</Text>
           <Box gap={1}>
             <Button
@@ -475,6 +531,7 @@ export const register: Register = (on) => {
     return (
       <Box flexDirection="column" gap={1}>
         {tabs}
+        {stale}
         {failure ? <Text color="error">{failure}</Text> : null}
         <Box flexDirection="column">
           <Text weight="bold" wrap="truncate-end">
@@ -560,8 +617,10 @@ async function take($: EngineInterface, text: string) {
   } catch {
     return;
   }
-  if (line.type === "status") await update($, connected, () => line.connected);
-  else if (line.type === "view") await show($, line.view);
+  if (line.type === "status") {
+    await update($, connected, () => line.connected);
+    if (line.connected) await update($, connectError, () => null);
+  } else if (line.type === "view") await show($, line.view);
   // A message starts a turn, shown as a message from the plugin: at once in an idle session, after
   // the turn in a busy one.
   else if (line.type === "message") void $.prompt.submit({ text: line.text });
@@ -595,17 +654,28 @@ async function connect($: EngineInterface) {
       });
       child = stream;
       let buffer = "";
+      let errors = "";
       for await (const piece of stream) {
         if (stopped) break;
-        if (piece.stream !== "stdout") continue;
+        if (piece.stream === "stderr") {
+          // Only the last line counts: it says why the session isn't connected, if it isn't.
+          errors += piece.text;
+          const lines = errors.split("\n");
+          errors = lines.pop() ?? "";
+          const last = lines.map((line) => line.trim()).findLast(Boolean);
+          if (last) await update($, connectError, () => last);
+          continue;
+        }
         buffer += piece.text;
         for (let end = buffer.indexOf("\n"); end >= 0; end = buffer.indexOf("\n")) {
           await take($, buffer.slice(0, end));
           buffer = buffer.slice(end + 1);
         }
       }
-    } catch {
-      // The CLI is not installed yet, or could not start; try again later.
+      if (errors.trim()) await update($, connectError, () => errors.trim());
+    } catch (error: unknown) {
+      // The CLI is not installed yet, or could not start; try again later, and say why meanwhile.
+      await update($, connectError, () => (error instanceof Error ? error.message : String(error)));
     }
     await update($, connected, () => false);
     if (stopped) break;
@@ -857,18 +927,23 @@ const BAR_STYLE = websiteStyle(
   (colors) =>
     `.t{fill:${colors.primary};fill-opacity:.2}.d{fill:${colors.success}}.p{fill:${colors.started}}`,
 );
+/** The bar while the session isn't live: the same parts in muted grays, as dim as the status. */
+const STALE_BAR_STYLE = websiteStyle(
+  (colors) =>
+    `.t{fill:${colors.muted};fill-opacity:.15}.d{fill:${colors.muted};fill-opacity:.55}.p{fill:${colors.muted};fill-opacity:.35}`,
+);
 
 /**
  * The checklist's progress, less its rounded ends: done in green, then work in progress in a
  * lighter green. The drawing is wider than any band and stretches to the box it gets, so it fills
  * the rest of the row.
  */
-function barSvg({ done, inProgress, total }: Progress) {
+function barSvg({ done, inProgress, total }: Progress, style: string) {
   const WIDTH = 4000;
   const at = (count: number) => (total ? Math.round((count / total) * WIDTH) : 0);
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="6" viewBox="0 0 ${WIDTH} 6" preserveAspectRatio="none">`,
-    BAR_STYLE,
+    style,
     `<rect class="t" width="${WIDTH}" height="6"/>`,
     `<rect class="d" width="${at(done)}" height="6"/>`,
     `<rect class="p" x="${at(done)}" width="${at(done + inProgress) - at(done)}" height="6"/>`,
@@ -939,7 +1014,7 @@ function itemSvg(state: ItemState) {
 }
 
 /** One rounded end of the bar: a half circle as tall as the bar. */
-function capSvg(side: "left" | "right", part: BarPart) {
+function capSvg(side: "left" | "right", part: BarPart, style: string) {
   const half = side === "left" ? "M3 0A3 3 0 0 0 3 6Z" : "M0 0A3 3 0 0 1 0 6Z";
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="3" height="6" viewBox="0 0 3 6">${BAR_STYLE}<path class="${part}" d="${half}"/></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="3" height="6" viewBox="0 0 3 6">${style}<path class="${part}" d="${half}"/></svg>`;
 }
