@@ -28,7 +28,12 @@ name, an item or an outline.
   status its instructions name, else the next one in the team's order.
 - Call `get_ticket` before you change a ticket. People change tickets too.
 - Write the status's document with `write_document` the first time and
-  `edit_document` after that, passing the revision you read. On a conflict,
+  `edit_document` after that, passing the revision you read. A document is
+  HTML: top-level `<section>` elements that each start with an `<h2>`,
+  holding content elements only, with no scripts, styles, classes or SVG.
+  Markdown works too: each `##` heading starts a section. Every section and
+  every element directly inside one is a block with an `id`; change part of a
+  document by replacing, inserting or removing blocks by ID. On a conflict,
   read the document again and redo your change on the new revision.
 - Each checklist item is tagged Human or Clanker. Do the Clanker items: mark
   each one in progress with `update_checklist_item` and `inProgress: true` when
@@ -180,25 +185,25 @@ When this session has no Clanker Ship tools, ask your person to connect them
 (`/mcp` in Claude Code). Meanwhile, use the `clanker` CLI, which does the same
 with their sign-in:
 
-| Tool                       | CLI                                                                         |
-| -------------------------- | --------------------------------------------------------------------------- |
-| `get_ticket`               | `clanker ticket get WEB-31`                                                 |
-| `get_document`             | `clanker ticket doc show WEB-31 scope`                                      |
-| `write_document`           | `clanker ticket doc write WEB-31 plan --file plan.md --base-revision 2`     |
-| `edit_document`            | `clanker ticket doc edit WEB-31 plan --old "…" --new "…" --base-revision 3` |
-| `list_tickets`             | `clanker ticket list --query "docs search"`                                 |
-| `create_ticket`            | `clanker ticket create --team WEB --title "Add docs search"`                |
-| `update_ticket`            | `clanker ticket update WEB-31 --status "Build"`                             |
-| `get_clanker_instructions` | `clanker status instructions show "Plan" --team WEB`                        |
-| `add_checklist_item`       | `clanker ticket checklist add WEB-31 "Docs updated" --status "Build"`       |
-| `update_checklist_item`    | `clanker ticket checklist check WEB-31 "Tests pass"`                        |
-| `raise_request`            | `clanker request raise WEB-31 "…" --kind approve --client claude`           |
-| `resolve_request`          | `clanker request resolve <request> --approve --client claude --quote "…"`   |
-| `link_ticket_branch`       | `clanker ticket branch link WEB-31`                                         |
-| `link_ticket_pull_request` | `clanker ticket pr link WEB-31 https://github.com/acme/web/pull/142`        |
-| `comment_on_ticket`        | `clanker ticket comment WEB-31 --body "…"`                                  |
-| `complete_message`         | `clanker inbox complete <message> --client claude`                          |
-| `set_session_ticket`       | `clanker session ticket WEB-31`                                             |
+| Tool                       | CLI                                                                       |
+| -------------------------- | ------------------------------------------------------------------------- |
+| `get_ticket`               | `clanker ticket get WEB-31`                                               |
+| `get_document`             | `clanker ticket doc show WEB-31 scope`                                    |
+| `write_document`           | `clanker ticket doc write WEB-31 plan --file plan.html --base-revision 2` |
+| `edit_document`            | `clanker ticket doc edit WEB-31 plan --replace b7f3k2a --file p.html`     |
+| `list_tickets`             | `clanker ticket list --query "docs search"`                               |
+| `create_ticket`            | `clanker ticket create --team WEB --title "Add docs search"`              |
+| `update_ticket`            | `clanker ticket update WEB-31 --status "Build"`                           |
+| `get_clanker_instructions` | `clanker status instructions show "Plan" --team WEB`                      |
+| `add_checklist_item`       | `clanker ticket checklist add WEB-31 "Docs updated" --status "Build"`     |
+| `update_checklist_item`    | `clanker ticket checklist check WEB-31 "Tests pass"`                      |
+| `raise_request`            | `clanker request raise WEB-31 "…" --kind approve --client claude`         |
+| `resolve_request`          | `clanker request resolve <request> --approve --client claude --quote "…"` |
+| `link_ticket_branch`       | `clanker ticket branch link WEB-31`                                       |
+| `link_ticket_pull_request` | `clanker ticket pr link WEB-31 https://github.com/acme/web/pull/142`      |
+| `comment_on_ticket`        | `clanker ticket comment WEB-31 --body "…"`                                |
+| `complete_message`         | `clanker inbox complete <message> --client claude`                        |
+| `set_session_ticket`       | `clanker session ticket WEB-31`                                           |
 
 `clanker <command> --help` shows every option. The CLI acts as your person,
 so check a Human item with it only when they approve it in this conversation.
