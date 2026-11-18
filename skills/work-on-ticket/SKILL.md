@@ -30,11 +30,12 @@ name, an item or an outline.
 - Write the status's document with `write_document` the first time and
   `edit_document` after that, passing the revision you read. A document is a
   web page: any HTML, CSS and JavaScript, drawn in a sandbox that can't reach
-  the network. Markdown works too. Every frame starts with Blueprint, Clanker
-  Ship's style: write plain HTML, or use its tokens, parts and shared drawings
-  from https://docs.clankership.com/get-started/concepts/planning/documents
-  for heroes, diagrams, file trees and decision cards. Give each section an
-  `h2`: the ticket page lists them as Contents. Every element of the body has
+  the network. Markdown works too. Start from the status's template, which
+  `get_clanker_instructions` returns with the writing guide: keep its hero,
+  sections and heading ids, replace each prompt, and use Blueprint's parts
+  from the guide for diagrams, file trees, test cases and decision cards.
+  Each section's `h2` shows in the ticket page's Contents. `get_writing_guide`
+  returns the guide on its own. Every element of the body has
   a node ID in its `data-cid` attribute; change part of a document by
   replacing, inserting or removing elements by node ID. Check a draft with `preview_document`
   first. On a conflict, read the document again and redo your change on the
