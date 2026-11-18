@@ -28,13 +28,13 @@ name, an item or an outline.
   status its instructions name, else the next one in the team's order.
 - Call `get_ticket` before you change a ticket. People change tickets too.
 - Write the status's document with `write_document` the first time and
-  `edit_document` after that, passing the revision you read. A document is
-  HTML: top-level `<section>` elements that each start with an `<h2>`,
-  holding content elements only, with no scripts, styles, classes or SVG.
-  Markdown works too: each `##` heading starts a section. Every section and
-  every element directly inside one is a block with an `id`; change part of a
-  document by replacing, inserting or removing blocks by ID. On a conflict,
-  read the document again and redo your change on the new revision.
+  `edit_document` after that, passing the revision you read. A document is a
+  web page: any HTML, CSS and JavaScript, drawn in a sandbox that can't reach
+  the network. Markdown works too. Every element of the body has a node ID in
+  its `data-cid` attribute; change part of a document by replacing, inserting
+  or removing elements by node ID. Check a draft with `preview_document`
+  first. On a conflict, read the document again and redo your change on the
+  new revision.
 - Each checklist item is tagged Human or Clanker. Do the Clanker items: mark
   each one in progress with `update_checklist_item` and `inProgress: true` when
   you start it, and check it with `done: true` when it is done, not before.
