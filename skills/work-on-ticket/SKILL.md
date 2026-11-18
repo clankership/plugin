@@ -30,9 +30,13 @@ name, an item or an outline.
 - Write the status's document with `write_document` the first time and
   `edit_document` after that, passing the revision you read. A document is a
   web page: any HTML, CSS and JavaScript, drawn in a sandbox that can't reach
-  the network. Markdown works too. Every element of the body has a node ID in
-  its `data-cid` attribute; change part of a document by replacing, inserting
-  or removing elements by node ID. Check a draft with `preview_document`
+  the network. Markdown works too. Every frame starts with Blueprint, Clanker
+  Ship's style: write plain HTML, or use its tokens, parts and shared drawings
+  from https://docs.clankership.com/get-started/concepts/planning/documents
+  for heroes, diagrams, file trees and decision cards. Give each section an
+  `h2`: the ticket page lists them as Contents. Every element of the body has
+  a node ID in its `data-cid` attribute; change part of a document by
+  replacing, inserting or removing elements by node ID. Check a draft with `preview_document`
   first. On a conflict, read the document again and redo your change on the
   new revision.
 - Each checklist item is tagged Human or Clanker. Do the Clanker items: mark
@@ -163,7 +167,7 @@ checklist's progress. The ticket you create or link with `create_ticket`, `link_
   the steps to try it.
 - Show the plan's test cases with links to their runs, then every failure and
   fix from the Build record. Reuse the Plan's diagrams, and draw new ones in
-  Mermaid.
+  Blueprint's diagram panels.
 - Stop for the review. When the Review checklist is done and the
   instructions allow it, merge each pull request the ticket links;
   `get_ticket` lists them.
