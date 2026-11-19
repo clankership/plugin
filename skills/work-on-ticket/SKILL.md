@@ -65,9 +65,10 @@ their notifications and on My clankers, so they can answer wherever they are.
 - Pick the kind by what you need:
   - `approve`: a review of something you made, such as a design or a
     preview.
-  - `choose`: a decision that changes what gets built or tested, such as a
-    Scope's open question, with two to six options, the one you recommend
-    first.
+  - `choose`: a decision that changes what gets built or tested and can't
+    wait for the document's review, with two to six options, the one you
+    recommend first. A Scope's or a Plan's open choices are decision cards
+    in the document instead.
   - `answer`: a fact only they have, such as an account ID or a URL.
   - `do`: a step only they can take, such as signing in, adding a DNS record
     or setting a secret in the Secrets vault, with numbered steps in
@@ -134,9 +135,9 @@ checklist's progress. The ticket you create or link with `create_ticket`, `link_
 
 ## Backlog (by default, the Scope)
 
-- From a prompt: draft the Scope from the prompt and the code, then raise
-  each open question as a `choose` or `answer` request, one at a time with
-  your recommendation first, and write each answer into the Scope.
+- From a prompt: draft the Scope from the prompt and the code. Write each
+  choice it leaves open as a decision card with your recommendation; approving
+  the Scope approves them, so raise no request for them.
 - Written by a person: read it and comment on the gaps. Don't rewrite it.
 - When the person only wants the ticket filed, stop once the Scope is written.
 
@@ -179,7 +180,7 @@ checklist's progress. The ticket you create or link with `create_ticket`, `link_
   per environment, in order. Check each when `get_deployment` shows a version
   that includes every linked pull request's merge. Merged alone is not
   shipped.
-- In production, check the Scope's success signal and the logs. Never use a
+- In production, check the Scope's goals and the logs. Never use a
   real customer's account or data.
 - Move to Done once the merged change runs in production and the instructions
   allow it. Otherwise say the ticket is ready for a person to close.
@@ -197,7 +198,7 @@ with their sign-in:
 | `write_document`           | `clanker ticket doc write WEB-31 plan --file plan.html --base-revision 2` |
 | `edit_document`            | `clanker ticket doc edit WEB-31 plan --replace b7f3k2a --file p.html`     |
 | `list_tickets`             | `clanker ticket list --query "docs search"`                               |
-| `create_ticket`            | `clanker ticket create --team WEB --title "Add docs search"`              |
+| `create_ticket`            | `clanker ticket create --team WEB --title "Search in the docs"`           |
 | `update_ticket`            | `clanker ticket update WEB-31 --status "Build"`                           |
 | `get_clanker_instructions` | `clanker status instructions show "Plan" --team WEB`                      |
 | `add_checklist_item`       | `clanker ticket checklist add WEB-31 "Docs updated" --status "Build"`     |
