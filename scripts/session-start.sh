@@ -2,7 +2,7 @@
 # Clanker Ship plugin session hook: makes sure the standalone Clanker CLI is installed.
 # Installing the plugin is the consent: its listing says it installs the CLI (about 320 MB,
 # mostly Chrome). The first session starts that install in the background and says so.
-# Usage: session-start.sh <claude|cursor|codex>
+# Usage: session-start.sh <claude|cursor|codex|antigravity>
 HOST="${1:-claude}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SITE="$(cat "$ROOT/site.txt" 2>/dev/null || echo https://clankership.com)"
@@ -57,6 +57,18 @@ case "$HOST" in
     ;;
   cursor)
     printf '{"env":{"PATH":"%s"},"additional_context":"%s"}\n' "$(json "$BIN:$PATH")" "$(json "${MESSAGE:-The clanker CLI is on PATH at $CLI.}")"
+    ;;
+  antigravity)
+    NOTES="$MESSAGE"
+    if [ -z "$ON_PATH" ]; then
+      PATH_NOTE="The clanker CLI is at $CLI; prepend $BIN to PATH for this session if clanker is not found."
+      NOTES="${NOTES:+$NOTES }${PATH_NOTE}"
+    fi
+    if [ -n "$NOTES" ]; then
+      printf '{"injectSteps":[{"systemMessage":{"systemMessage":"%s"}}]}\n' "$(json "$NOTES")"
+    else
+      printf '{}\n'
+    fi
     ;;
   *)
     [ -n "$MESSAGE" ] && printf '%s\n' "$MESSAGE"

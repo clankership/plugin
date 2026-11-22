@@ -27,12 +27,18 @@ codex plugin add clanker-ship@clankership
 
 In Cursor, install **Clanker Ship** from the Cursor Marketplace once the listing is live.
 
+In Antigravity, clone the plugin into your Antigravity plugins folder (or run `agy plugin install https://github.com/clankership/plugin`):
+
+```bash
+git clone --depth 1 https://github.com/clankership/plugin ~/.gemini/config/plugins/clanker-ship
+```
+
 ## After install
 
-1. Restart your clanker so it loads the plugin.
+1. Restart your clanker (or start a new Antigravity session) so it loads the plugin.
 2. Sign in to Clanker Ship. In Claude Code, type `/mcp`, choose
-   `plugin:clanker-ship:clanker-ship` and choose Authenticate. In Codex and
-   Cursor, the clanker's first Clanker Ship call opens the sign-in page.
+   `plugin:clanker-ship:clanker-ship` and choose Authenticate. In Codex, Cursor
+   and Antigravity, the clanker's first Clanker Ship call opens the sign-in page.
 3. Ask your clanker to set up Clanker Ship, then give it a task, such as "Fix this
    bug" or "Build WEB-31".
 

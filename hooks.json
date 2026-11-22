@@ -1,0 +1,42 @@
+{
+  "clanker-ship": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "sh ./scripts/session-start.sh antigravity",
+        "timeout": 10
+      },
+      {
+        "type": "command",
+        "command": "sh ./scripts/hook.sh session-start antigravity",
+        "timeout": 15
+      }
+    ],
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "sh ./scripts/hook.sh prompt antigravity",
+        "timeout": 10
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": ".*(create_ticket|link_ticket_branch)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh ./scripts/hook.sh tool antigravity",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "sh ./scripts/hook.sh stop antigravity",
+        "timeout": 10
+      }
+    ]
+  }
+}

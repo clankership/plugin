@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "clanker-ship": {
+      "url": "https://api.clankership.com/mcp"
+    }
+  }
+}
