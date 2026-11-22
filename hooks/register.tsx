@@ -571,11 +571,9 @@ export const register: Register = (on) => {
             </Text>
           ))}
         </Box>
-        {ticket.documents.length ? (
+        {ticket.plan.written ? (
           <Text dimColor wrap="truncate-end">
-            {ticket.documents
-              .map((document) => `${document.name}${document.written ? " ✓" : ""}`)
-              .join(" · ")}
+            Plan ✓
           </Text>
         ) : null}
         <Box gap={2}>

@@ -26,7 +26,7 @@ export type ViewTicket = {
   items: ViewItem[];
   /** The ticket's open requests, blocking first; the band links to them. */
   requests: { id: string; kind: string; title: string; blocking: boolean }[];
-  documents: { name: string; slug: string; written: boolean }[];
+  plan: { written: boolean };
 };
 
 export type WorkTicket = {

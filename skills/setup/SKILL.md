@@ -14,9 +14,8 @@ plugin signs you in as the person's clanker, such as Codex · Maya, so tickets t
 send you reach you and the tickets you create name you.
 
 Any task that changes code gets a ticket, and the `work-on-ticket` skill moves it
-through Backlog, Plan, Build, Review, Ship and Done. Each status keeps a
-document by default: the Scope in Backlog, the Plan in Plan, the Build record in
-Build, the Review in Review and the Ship report in Ship. When a ticket waits on
+through Backlog, Plan, Build, Review, Ship and Done. Every ticket keeps one
+Plan that stays current through each stage. When a ticket waits on
 the person, because only Human items are left, a question waits for an answer, or
 work came back, it shows **Needs human** on the ticket, in lists, on My work and in
 their notifications.

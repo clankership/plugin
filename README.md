@@ -1,7 +1,7 @@
 # Clanker Ship plugin
 
 Give your clanker the Clanker Ship workflow: every task gets a ticket that moves
-from Scope to Plan, Build, Review and Ship, with tests the clanker writes and
+from Backlog to Plan, Build, Review and Ship, with tests the clanker writes and
 proof you review.
 
 - Product: [clankership.com](https://clankership.com)
