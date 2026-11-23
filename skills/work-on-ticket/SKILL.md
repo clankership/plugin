@@ -55,9 +55,13 @@ name, an item or an outline.
   replacing, inserting or removing elements by node ID. Check a draft with
   `preview_document` first. On a conflict, read the document again and redo
   your change on the new revision.
-- Each checklist item is tagged Human or Clanker. Do the Clanker items: mark
-  each one in progress with `update_checklist_item` and `inProgress: true` when
-  you start it, and check it with `done: true` when it is done, not before.
+- Each checklist item is tagged Human or Clanker. Complete every Clanker item
+  for the current status in order: before starting an item, look up its matching
+  `## <Checklist item>` section in the status's instructions
+  (`get_clanker_instructions`) for how to complete it. Mark each item in
+  progress with `update_checklist_item` and `inProgress: true` when you start
+  it, and check it with `done: true` only after every requirement in its
+  instructions section is satisfied, never before.
 - Add items the status still needs with `add_checklist_item`, which takes
   several `items` at once, each tagged for whoever must do it. When you can't
   do a Clanker item, tag it Human and say why with `comment_on_ticket`.
@@ -162,8 +166,8 @@ checklist's progress. The ticket you create or link with `create_ticket`, `link_
   `comment_on_ticket` instead of rewriting it.
 - If the person only wants the ticket filed, leave it in Backlog once the
   Brief is written.
-- If the person wants it planned or built now, move it to Plan once the Brief
-  is approved.
+- If the person wants it planned or built now, move it to Plan once the Backlog
+  checklist is done.
 
 ## Plan
 
@@ -172,23 +176,33 @@ checklist's progress. The ticket you create or link with `create_ticket`, `link_
   repeat the Brief: its tab sits beside the Plan.
 - Write the test cases with the `test-case-writing` skill, each naming the
   Brief's requirements it covers.
-- After a person checks the Plan's approval item, copy each step the
-  instructions name into the Build checklist with one `add_checklist_item`
-  call, tagged Clanker.
+- After a person checks the Plan's approval item, copy each Approach step into
+  the Build checklist with `add_checklist_item` tagged Clanker and place them
+  before `Write test cases` with `reorder_checklist_item`.
 
 ## Build
 
-- Work the Build checklist in order. Generate the specs with the
-  `test-code-generation` skill and run them with `clanker run`.
+- Work the Build checklist in order, following the matching `## <Checklist item>`
+  section in the Build instructions for each item.
+- Make sure the Plan's Approach steps are on the Build checklist before
+  `Write test cases` (add and reorder them if they aren't already there), and
+  complete them before moving on to test cases.
+- If the product does not yet have Clanker Ship tests, run the `set-up-testing`
+  skill first so its Fixture API, `TESTING.md`, `clanker.json` entry, and CI are
+  in place before writing `automation: generated` cases and generating specs.
+- Generate the specs with the `test-code-generation` skill, run the new and
+  updated tests plus all affected tests with `clanker run` before creating a
+  pull request, and fix failures and flaky retries introduced by the branch.
 - If the work departs from the Plan or a test case must change, update the
   Plan with `edit_document`, say what changed and why with
   `comment_on_ticket`, and keep going. A change to the test cases needs no
   approval.
 - When the work ships in parts, build one part at a time, and take each to
   Review on its own.
-- When the checklist is done, open the pull request from the ticket's branch
-  and link it with `link_ticket_pull_request`, passing the link `gh pr create`
-  prints. Work in several repositories links one pull request per repository.
+- Only after every Build checklist item is checked (including `Run tests` and
+  `Update docs`), open the pull request from the ticket's branch and link it
+  with `link_ticket_pull_request`, passing the link `gh pr create` prints. Work
+  in several repositories links one pull request per repository.
 
 ## Review
 
@@ -198,15 +212,15 @@ checklist's progress. The ticket you create or link with `create_ticket`, `link_
   a prompt your person can give their own clanker to run it on theirs,
   screenshots of each new or changed screen as `data:` images, the test run
   with each case's result, the pull requests, and what changed from the Plan.
-  Check Merge Request written.
-- Check Pull request linked once the ticket links the part's pull requests.
-- Stop for the review: raise a request on the Merge Request approved item
+  Check `Write Merge Request`.
+- Check `Link pull request` once the ticket links the part's pull requests.
+- Stop for the review: raise a request on the `Approve Merge Request` item
   (`checklistItem`) with the Merge Request and its revision as `context`, so
   your person opens it from the request.
 - When the Review checklist is done and the instructions allow it, merge each
   pull request the part links; `get_ticket` lists them.
 - When more parts are left, move back to Build for the next one, and add a
-  Human item such as "Merge Request 2 approved" when it reaches Review. Move
+  Human item such as "Approve Merge Request 2" when it reaches Review. Move
   to Ship after the last part merges.
 
 ## Ship
@@ -219,8 +233,8 @@ checklist's progress. The ticket you create or link with `create_ticket`, `link_
   each merge and environment with its version and time, the Brief's end-user
   value and each requirement with what production shows, what you did in
   production with a test account, the errors in the logs, and any
-  follow-ups. Never use a real customer's account or data. Check Ship Report
-  written.
+  follow-ups. Never use a real customer's account or data. Check `Write Ship
+Report`.
 - Move to Done once the merged change runs in production and the instructions
   allow it. Otherwise say the ticket is ready for a person to close.
 
@@ -243,8 +257,8 @@ with their sign-in:
 | `create_ticket`            | `clanker ticket create --team WEB --title "Search in the docs"`           |
 | `update_ticket`            | `clanker ticket update WEB-31 --status "Build"`                           |
 | `get_clanker_instructions` | `clanker status instructions show "Plan" --team WEB`                      |
-| `add_checklist_item`       | `clanker ticket checklist add WEB-31 "Docs updated" --status "Build"`     |
-| `update_checklist_item`    | `clanker ticket checklist check WEB-31 "Tests pass"`                      |
+| `add_checklist_item`       | `clanker ticket checklist add WEB-31 "Update docs" --status "Build"`      |
+| `update_checklist_item`    | `clanker ticket checklist check WEB-31 "Run tests"`                       |
 | `raise_request`            | `clanker request raise WEB-31 "…" --kind approve --client claude`         |
 | `resolve_request`          | `clanker request resolve <request> --approve --client claude --quote "…"` |
 | `link_ticket_branch`       | `clanker ticket branch link WEB-31`                                       |
