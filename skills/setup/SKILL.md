@@ -14,8 +14,9 @@ plugin signs you in as the person's clanker, such as Codex · Maya, so tickets t
 send you reach you and the tickets you create name you.
 
 Any task that changes code gets a ticket, and the `work-on-ticket` skill moves it
-through Backlog, Plan, Build, Review, Ship and Done. Every ticket keeps one
-Plan that stays current through each stage. When a ticket waits on
+through Backlog, Plan, Build, Review, Ship and Done. Along the way it writes the
+ticket's Brief, Plan, a Merge Request for each part and the Ship Report, which
+the ticket shows as tabs. When a ticket waits on
 the person, because only Human items are left, a question waits for an answer, or
 work came back, it shows **Needs human** on the ticket, in lists, on My work and in
 their notifications.
@@ -45,4 +46,5 @@ their notifications.
    with the ticket's checklist, where they check their own items, and their
    other work. In Codex, My work is in the sidebar, a thread's side panel
    shows the ticket linked to its branch or named in it, such as
-   `codex/web-31-promo`, and `.plan.md` files open in the plan viewer.
+   `codex/web-31-promo`, and a file named for a ticket document, such as
+   `WEB-31.brief.md` or `WEB-31.plan.md`, opens in the document viewer.
